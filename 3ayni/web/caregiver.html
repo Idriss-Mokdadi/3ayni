@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="referrer" content="no-referrer" />
+    <title>3ayni · Caregiver</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e1116'/%3E%3Cpath d='M5 16c3-5 7-7 11-7s8 2 11 7c-3 5-7 7-11 7s-8-2-11-7z' fill='none' stroke='%234fb3a9' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%234fb3a9'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="head">
+        <div class="head-title">
+          <strong>3ayni</strong>
+          <span class="muted">Caregiver</span>
+        </div>
+        <span class="pill"><span class="dot" id="patient-dot"></span><span id="patient-text">Connecting…</span></span>
+      </header>
+
+      <section class="alert-card" id="alert-card" hidden aria-live="assertive">
+        <div class="alert-top">
+          <span class="alert-level" id="alert-level">Urgent</span>
+          <span class="muted mono" id="alert-time"></span>
+        </div>
+        <p class="alert-reason" id="alert-reason"></p>
+        <button class="btn btn-primary btn-block" id="alert-ack" type="button">I'm on my way</button>
+      </section>
+
+      <section class="card message-card" id="message-card">
+        <div class="card-label">
+          <span>Latest message</span>
+          <span class="muted mono" id="message-time"></span>
+        </div>
+        <p class="message-ar" lang="ar" dir="rtl" id="message-ar">—</p>
+        <p class="message-en" id="message-en">No message yet</p>
+      </section>
+
+      <section class="card vitals-card">
+        <div class="card-label">
+          <span>Vital signs <span class="muted">· camera estimate</span></span>
+          <span class="pill" id="sim-tag" hidden>Simulation</span>
+        </div>
+        <div class="vitals-grid">
+          <div>
+            <div class="big-number mono"><span id="hr" class="is-empty">—</span><small>bpm</small></div>
+            <div class="muted" id="hr-detail">Waiting for signal</div>
+          </div>
+          <div>
+            <div class="mid-number mono"><span id="rr" class="is-empty">—</span><small>/min</small></div>
+            <div class="muted">Breathing (experimental)</div>
+          </div>
+        </div>
+        <canvas class="trend" id="trend" aria-label="Heart rate over the last 10 minutes"></canvas>
+        <div class="vitals-foot">
+          <span class="state-chip" id="state-chip">Learning baseline</span>
+          <span class="pill"><span class="dot" id="quality-dot"></span><span id="quality-text">No signal</span></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-label"><span>Ask a yes / no question</span></div>
+        <div class="chips" id="question-chips"></div>
+        <form class="ask" id="ask-form">
+          <input id="ask-input" maxlength="120" placeholder="Your own question…" autocomplete="off" />
+          <button class="btn" type="submit">Ask</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-label"><span>Set patient choices</span></div>
+        <p class="muted" style="font-size:0.8rem;margin:0 0 0.5rem">Pick up to 5 phrases — they will appear as the only tiles on the patient screen.</p>
+        <div id="tile-picker"></div>
+        <button class="btn btn-primary" id="send-tiles-btn" type="button" disabled style="margin-top:0.75rem;width:100%">Select choices above (max 5)</button>
+      </section>
+
+      <section class="card">
+        <div class="card-label"><span>History</span></div>
+        <ol class="history" id="history"></ol>
+      </section>
+
+      <p class="footnote muted">Assistive tool. Vital signs are camera estimates and do not replace clinical monitoring.</p>
+    </div>
+
+    <div class="sound-gate" id="sound-gate" hidden>
+      <button class="btn btn-primary" id="sound-enable" type="button">Enable alert sounds</button>
+    </div>
+
+    <section class="pair-missing" id="pair-missing" hidden>
+      <h1>Not paired</h1>
+      <p>Scan the QR code shown on the bedside screen (press P there) to connect this phone.</p>
+    </section>
+
+    <script type="module" src="/src/caregiver/main.js"></script>
+  </body>
+</html>

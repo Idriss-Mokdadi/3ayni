@@ -1,0 +1,707 @@
+@import './base.css';
+
+body {
+  overflow: hidden;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  height: 100dvh;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-5);
+  min-height: 56px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.brand-mark {
+  align-self: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--accent);
+  border-radius: 60% 60% 60% 60% / 50% 50% 50% 50%;
+  position: relative;
+}
+
+.brand-mark::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.brand-name {
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.brand-ar {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out);
+}
+
+.banner-label {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.banner-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+}
+
+.banner[data-tone='question'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.banner[data-tone='question'] .banner-label {
+  color: var(--accent);
+}
+.banner[data-tone='attention'] {
+  border-color: var(--attention);
+  background: var(--attention-soft);
+}
+.banner[data-tone='urgent'] {
+  border-color: var(--urgent);
+  background: var(--urgent-soft);
+}
+
+.vitals {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.vital {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.vital-icon {
+  align-self: center;
+  display: inline-flex;
+  color: var(--urgent);
+}
+
+.vital-secondary .vital-icon {
+  color: var(--accent);
+}
+
+.vital-value {
+  font-size: 22px;
+  font-weight: 500;
+  min-width: 2.4ch;
+  text-align: right;
+}
+
+.vital-secondary .vital-value {
+  font-size: 17px;
+}
+
+.vital-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vitals[data-quality='poor'] .vital-value,
+.vitals[data-quality='none'] .vital-value {
+  color: var(--text-faint);
+}
+
+.pulse-wave {
+  width: 120px;
+  height: 32px;
+}
+
+@media (max-width: 1100px) {
+  .topbar {
+    gap: var(--space-3);
+  }
+  .brand-ar,
+  .pulse-wave,
+  #signal-text,
+  #link-text {
+    display: none;
+  }
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pill-button {
+  cursor: pointer;
+  min-height: 28px;
+}
+
+#sim-pill {
+  color: var(--attention);
+  border-color: var(--attention);
+}
+
+/* ---------- Board ---------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.tile {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto auto 1fr;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+.tile:hover {
+  border-color: var(--line-strong);
+}
+
+.tile-icon {
+  align-self: end;
+  display: inline-flex;
+  color: var(--text-muted);
+  transition: color 180ms var(--ease-out);
+}
+
+.tile-ar {
+  font-size: clamp(28px, 4.2vw, 52px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.tile-latin {
+  align-self: start;
+  font-size: clamp(13px, 1.25vw, 17px);
+  color: var(--text-muted);
+}
+
+.tile-badge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.tile[data-urgency='urgent'] .tile-icon {
+  color: var(--urgent);
+}
+.tile[data-urgency='attention'] .tile-icon {
+  color: var(--attention);
+}
+.tile[data-kind='nav'] {
+  background: transparent;
+  border-style: dashed;
+}
+
+.tile.is-hovered {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.tile.is-hovered .tile-icon {
+  color: var(--accent);
+}
+
+.tile.is-selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: scale(0.985);
+}
+
+/* Dwell ring: fills while the patient keeps looking at the tile. */
+.ring {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+}
+
+.tile.is-hovered .ring {
+  opacity: 1;
+}
+
+.ring-track,
+.ring-progress {
+  fill: none;
+  stroke-width: 5;
+}
+
+.ring-track {
+  stroke: var(--line);
+}
+
+.ring-progress {
+  stroke: var(--accent);
+  stroke-linecap: round;
+}
+
+.app.is-fatigued .tile-latin {
+  display: none;
+}
+
+/* ---------- Gaze cursor and toast ---------- */
+
+.gaze-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+  will-change: transform;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-m);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  font-weight: 500;
+  z-index: 30;
+}
+
+/* ---------- Overlays ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: rgb(8 10 14 / 0.86);
+  z-index: 40;
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.panel {
+  width: min(560px, 100%);
+  padding: var(--space-6);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.start-panel h1 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+.start-title {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.start-ar {
+  font-size: 28px;
+  color: var(--accent);
+}
+
+.lead {
+  margin: 0 0 var(--space-5);
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.facts [data-icon] {
+  display: inline-flex;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.start-error {
+  margin: var(--space-4) 0 0;
+  color: var(--urgent);
+}
+
+.overlay-calibration {
+  background: var(--bg);
+  place-items: initial;
+}
+
+.calibration-dot {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  transition:
+    left 450ms var(--ease-out),
+    top 450ms var(--ease-out);
+}
+
+.calibration-dot::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: scale(0.4);
+  transition: transform 200ms var(--ease-out);
+}
+
+.calibration-dot.is-capturing::after {
+  transform: scale(1);
+}
+
+.calibration-hint {
+  position: fixed;
+  left: 50%;
+  top: 30%;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.calibration-hint [lang='ar'] {
+  font-size: 24px;
+  color: var(--text);
+}
+
+.calibration-progress {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  width: 240px;
+  height: 4px;
+  margin-left: -120px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.calibration-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+.pair-panel {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.pair-panel h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.muted {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.qr {
+  width: 240px;
+  height: 240px;
+  padding: var(--space-3);
+  border-radius: var(--radius-m);
+  background: #fff;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pair-url {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------- Operator panel ---------- */
+
+.devpanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  overflow-y: auto;
+  padding: var(--space-4);
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  z-index: 35;
+  transform: translateX(100%);
+  transition: transform 220ms var(--ease-out);
+}
+
+/* Kept rendered (not display:none) so the camera preview keeps playing. */
+.devpanel.is-open {
+  transform: none;
+}
+
+.devpanel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-3);
+}
+
+.devpanel h3 {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.preview {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  background: #000;
+}
+
+.preview video,
+.preview canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror, like looking in a mirror */
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--space-4);
+  margin: var(--space-3) 0 0;
+  font-size: 12px;
+}
+
+.metrics dt {
+  color: var(--text-muted);
+}
+
+.metrics dd {
+  margin: 0;
+  text-align: right;
+}
+
+.dev-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.dev-actions .btn,
+.validation .btn {
+  justify-content: center;
+  font-size: 13px;
+  min-height: 36px;
+  padding: 0 var(--space-2);
+}
+
+.dev-actions .btn[aria-pressed='true'] {
+  border-color: var(--attention);
+  color: var(--attention);
+}
+
+.validation {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--space-2);
+}
+
+.validation input {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+#validation-summary {
+  margin-top: var(--space-2);
+  font-size: 12px;
+}
+
+/* =========================================================
+   Board footer — pagination arrows (caregiver tile mode)
+   ========================================================= */
+
+.board-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.footer-page {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  flex: 1;
+  text-align: center;
+}
+
+/* Arrow buttons share the same dwell-ring mechanic as tiles */
+.footer-arrow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-m);
+  border: 2px solid var(--line-strong);
+  background: var(--surface-raised);
+  cursor: pointer;
+  transition: border-color 150ms var(--ease-out), background 150ms var(--ease-out);
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.footer-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+.footer-arrow.is-hovered {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.footer-arrow.is-selected {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.footer-clear {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border-color: var(--line);
+  color: var(--text-muted);
+}
+
+/* The dwell ring sits inside each arrow button, same as tiles */
+.footer-arrow .ring {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  pointer-events: none;
+}
