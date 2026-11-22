@@ -52,7 +52,7 @@ The hardware is a laptop with a webcam, plus any phone. No special device, no cl
 | Face tracking | MediaPipe Face Landmarker: 478 points, blendshapes and iris points. Runs in the browser; the model and WebAssembly runtime are bundled for offline use. |
 | Relay | Node.js with Express 5 and `ws` (WebSocket) on port 3000 |
 | Pairing | QR code (`qrcode`) carrying a random token |
-| Tests | Vitest: 86 unit tests in 5 files |
+| Tests | Vitest: 91 unit tests in 5 files |
 
 ### 3.2 Architecture
 
@@ -61,7 +61,7 @@ camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device
               │
               ├─> gaze features ──> personal calibration ──> One Euro filter ──> tile ──> dwell (eyes open)
               │                     (ridge regression,                                     │
-              │                      5 dots, ~8 s)                                         ▼
+              │                      9 dots, ~15 s)                                         ▼
               │                                        suggestions (phrase model) ──> board ──> speech + message ─┐
               │                                                                                                   ▼
               └─> forehead + cheeks ──> POS pulse extraction ──> FFT peak + SNR ──> care monitor ──> relay ──> caregiver phone
@@ -75,7 +75,7 @@ camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device
 |---|---|
 | `server/index.js` | Relay. Handles pairing tokens, checks each event against a schema, limits size and rate, keeps per-role permissions, and keeps a short history for phones that join late. |
 | `web/src/patient/camera.js` | Webcam and MediaPipe loop |
-| `web/src/patient/gaze/` | `features.js` (iris position, eye rotation, head pose), `calibration.js` (5-dot procedure), `ridge.js` (ridge regression), `one-euro.js` (One Euro filter), `selection.js` (dwell; closed eyes cancel) |
+| `web/src/patient/gaze/` | `features.js` (iris position, eye rotation, head pose), `calibration.js` (9-dot procedure, noisy frames dropped, checked on unseen dots), `ridge.js` (ridge regression), `one-euro.js` (One Euro filter), `selection.js` (dwell; closed eyes cancel) |
 | `web/src/patient/vitals/` | `roi.js` (forehead and cheek skin regions), `dsp.js` (detrending, band-pass, FFT), `rppg.js` (POS heart-rate estimator with SNR quality grade) |
 | `web/src/patient/board/` | `phrases.js` (Darija, French and English phrases), `board-model.js` (navigation), `board-view.js` (rendering) |
 | `web/src/patient/predictor.js` | Phrase suggestion model |
@@ -94,7 +94,7 @@ camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device
 
 **Gaze**
 - For each frame, a feature vector is built from the iris position inside each eye, the eye-look blendshapes and the head pose.
-- A 5-dot calibration (about 8 s) fits a **ridge regression** from these features to screen coordinates. It is fitted per person, because every face and camera position is different.
+- A 9-dot calibration (about 15 s) fits a **ridge regression** from these features to screen coordinates. It is fitted per person, because every face and camera position is different.
 - A **One Euro filter** smooths the cursor: steady when the eye rests, responsive when it moves.
 - The cursor is mapped to the grid cell under it. A tile is selected after a **dwell** (the ring fills). **Closing the eyes cancels the choice**, so a resting patient never selects anything.
 
@@ -124,7 +124,7 @@ The jury asked for purposeful AI. Each part uses the simplest tool that works.
 | Part | Approach | Why |
 |---|---|---|
 | Face and eye tracking | Neural network (MediaPipe) | Cannot be done with rules |
-| Gaze to screen position | Ridge regression, fitted per person | A learned mapping absorbs each face and camera set-up in 8 s |
+| Gaze to screen position | Ridge regression, fitted per person | A learned mapping absorbs each face and camera set-up in 15 s |
 | Pulse from video | POS signal processing and spectral analysis | Published, explainable, fast, and needs no training data |
 | Phrase suggestions | Small probabilistic model | Instant and offline, explains itself, personalises. A large language model would be slower, opaque and need the internet. |
 | Alerts | Transparent rules | Clinical alerts must be predictable and explainable |
@@ -137,7 +137,7 @@ I re-ran both commands while writing this report (`npm test` and `npm run evalua
 
 | Measure | Result |
 |---|---|
-| Unit tests | **86 of 86 pass** (5 files, under 2 s) |
+| Unit tests | **91 of 91 pass** (5 files, under 2 s) |
 | Suggestions, on 3,978 held-out simulated messages | The right phrase is in the model's top 3 **55.7 %** of the time, against 37.5 % for a fixed "most frequent" list. |
 | Heart rate on synthetic signals | Within **± 3 bpm** from 52 to 130 bpm, including a lighting flicker placed inside the heart-rate band (which fools a green-channel-only method). Pure noise is graded poor and shows no number. |
 | Heart rate on real people | **Not measured yet.** The validation logger is ready: record next to a smartwatch or finger oximeter, export the CSV, and report the mean absolute error. |
@@ -173,7 +173,7 @@ npm start
 ```
 
 1. Open **http://localhost:3000** in Chrome or Edge and click **Start camera**. With no camera, use **Continue without camera** and the mouse or the number keys.
-2. Follow the dot with your eyes for about 8 seconds.
+2. Follow the dot with your eyes for about 15 seconds, head still. With a phone as webcam, choose it in the **Camera** list first.
 3. Press **P** and scan the QR code with a phone on the same Wi-Fi or hotspot.
 
 **Keys on the bedside screen**
@@ -256,7 +256,7 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
 | 12 | How it works | The six-step chain with a live red ECG trace |
 | 13 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
 | 14 | AI where it matters | The AI versus rules table |
-| 15 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 86 of 86, counted up on screen |
+| 15 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 91 of 91, counted up on screen |
 | 16 | Trust | Privacy and responsible AI |
 | 17 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
 | 18 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
@@ -307,7 +307,7 @@ The packed file has no external references.
 |---|---|
 | **Relevance** | A real, under-served group in Tunisia (stroke, ALS, intubated and cerebral palsy patients). It covers domain 1 (disabilities) and domain 3 (early warning). |
 | **Innovation** | One ordinary camera does both communication and vital signs, and the two are fused: the system notices distress the patient cannot express. |
-| **Technical approach** | AI only where rules cannot work (face tracking, per-person gaze mapping, personalised suggestions). Rules where predictability matters (alerts). Published signal processing for the pulse. 86 tests. |
+| **Technical approach** | AI only where rules cannot work (face tracking, per-person gaze mapping, personalised suggestions). Rules where predictability matters (alerts). Published signal processing for the pulse. 91 tests. |
 | **Responsible AI and data security** | Video never leaves the device. Token pairing, schema validation, quality grades instead of false numbers, a stated skin-tone bias with a way to measure it, and an assistive, not diagnostic, position. |
 | **Demo and presentation** | A judge uses it live with their own eyes, the phone receives the message, and the alert loop closes on stage. The deck puts the audience inside the patient's eye. |
 
@@ -346,7 +346,7 @@ Breathing rate is experimental. Present it as such, or leave it out.
 E:\IEEE\Tech4Health 2.0\
 ├─ t4h book1.pdf                        challenge specifications
 ├─ 3ayni-report.md                      this report
-├─ 3ayni\                               the application (git, 86 tests)
+├─ 3ayni\                               the application (git, 91 tests)
 └─ pitch\
    ├─ 3ayni-pitch.pptx                  PowerPoint deck (10 slides)
    ├─ assets\                           screenshots, room photos, credits.json

@@ -11,6 +11,7 @@ const MODEL_PATH = '/models/face_landmarker.task';
  * @property {number} t                 frame time in ms (performance clock)
  * @property {Array<{x:number,y:number,z:number}>|null} landmarks  478 normalized points, or null when no face
  * @property {Record<string, number>} blendshapes  e.g. { eyeBlinkLeft: 0.02, ... }
+ * @property {number[]|null} pose       4x4 head pose matrix (column-major), or null
  * @property {HTMLVideoElement} video
  */
 
@@ -33,11 +34,13 @@ export class FaceTracker {
     return () => this.listeners.delete(listener);
   }
 
-  async start() {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-    });
+  /**
+   * @param {string|null} [deviceId] a specific camera (e.g. a phone used as a webcam); default: the front camera
+   */
+  async start(deviceId = null) {
+    const size = { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } };
+    const video = deviceId ? { deviceId: { exact: deviceId }, ...size } : { facingMode: 'user', ...size };
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video });
     this.video.srcObject = stream;
     this.video.muted = true;
     this.video.playsInline = true;
@@ -88,6 +91,7 @@ export class FaceTracker {
         video,
         landmarks: result.faceLandmarks?.[0] ?? null,
         blendshapes: toBlendshapeMap(result.faceBlendshapes?.[0]),
+        pose: result.facialTransformationMatrixes?.[0]?.data ?? null,
       };
       this.#trackFps(t);
       for (const listener of this.listeners) listener(frame);
@@ -112,7 +116,7 @@ async function createLandmarker() {
     runningMode: 'VIDEO',
     numFaces: 1,
     outputFaceBlendshapes: true,
-    outputFacialTransformationMatrixes: false,
+    outputFacialTransformationMatrixes: true, // real head angles help when the camera is below or beside the screen
   };
   try {
     return await FaceLandmarker.createFromOptions(fileset, {
@@ -154,6 +158,14 @@ async function lockCameraAdjustments(track) {
 function currentFrameId(video) {
   const frames = video.getVideoPlaybackQuality?.().totalVideoFrames;
   return frames > 0 ? frames : video.currentTime;
+}
+
+/** Cameras the browser can see (labels appear once camera access was allowed). */
+export async function listCameras() {
+  const devices = (await navigator.mediaDevices?.enumerateDevices?.()) ?? [];
+  return devices
+    .filter((d) => d.kind === 'videoinput')
+    .map((d, i) => ({ id: d.deviceId, label: d.label || `Camera ${i + 1}` }));
 }
 
 function toBlendshapeMap(classifications) {

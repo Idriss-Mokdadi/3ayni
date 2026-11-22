@@ -509,7 +509,7 @@ h2.top { top: 196px; font-size: 44px; }
 
   <!-- 7 · How it works -->
   <section class="slide inside" id="how" data-auto="18" data-guide="off" data-look="30" data-dim="0.66"
-    data-notes="Everything runs in the browser on the bedside laptop. A face model tracks the eyes, and an eight-second calibration learns this patient's gaze. Each heartbeat slightly changes the colour of the skin, which gives the heart rate. Clear rules combine words and body, and only the result reaches the phone.">
+    data-notes="Everything runs in the browser on the bedside laptop. A face model tracks the eyes, and a fifteen-second calibration learns this patient's gaze. Each heartbeat slightly changes the colour of the skin, which gives the heart rate. Clear rules combine words and body, and only the result reaches the phone.">
     <h2 class="lines center top">
       <span class="line"><span data-line style="--i:0">From a glance to the nurse's phone</span></span>
     </h2>
@@ -550,7 +550,7 @@ h2.top { top: 196px; font-size: 44px; }
       <thead><tr><th scope="col">Part</th><th scope="col">How</th><th scope="col">Why</th></tr></thead>
       <tbody>
         <tr><td>Eye and face tracking</td><td>Neural network (MediaPipe)</td><td>Impossible with rules</td></tr>
-        <tr><td>Gaze to screen</td><td>Personal calibration in 8 seconds</td><td>Every face is different</td></tr>
+        <tr><td>Gaze to screen</td><td>Personal calibration in 15 seconds</td><td>Every face is different</td></tr>
         <tr><td>Pulse from video</td><td>Published signal method (POS)</td><td>Explainable, no training data</td></tr>
         <tr><td>Phrase suggestions</td><td>Small model on the laptop</td><td>Offline, learns the patient</td></tr>
         <tr><td>Alerts</td><td>Plain rules with thresholds</td><td>Predictable for nurses</td></tr>
@@ -560,14 +560,14 @@ h2.top { top: 196px; font-size: 44px; }
 
   <!-- 10 · What we measured -->
   <section class="slide inside" id="proof" data-auto="18" data-guide="off" data-look="20" data-dim="0.7"
-    data-notes="The suggestion model has the right phrase in its top three 56 percent of the time, on almost 4,000 simulated messages it never saw; a fixed list of favourites reaches only 38 percent. On test signals the heart rate stays within 3 beats per minute, even under flickering light. All 86 automated tests pass. Next, real accuracy against a pulse oximeter.">
+    data-notes="The suggestion model has the right phrase in its top three 56 percent of the time, on almost 4,000 simulated messages it never saw; a fixed list of favourites reaches only 38 percent. On test signals the heart rate stays within 3 beats per minute, even under flickering light. All 91 automated tests pass. Next, real accuracy against a pulse oximeter.">
     <h2 class="lines center top">
       <span class="line"><span data-line style="--i:0">What we measured</span></span>
     </h2>
     <div class="figures">
       <div class="rise" style="--i:2"><b data-count="56" data-suffix=" %">0 %</b><p>of messages in the model's top 3 suggestions, against 38 % for a fixed list</p></div>
       <div class="rise" style="--i:3"><b data-count="3" data-prefix="± " data-suffix=" bpm">± 0 bpm</b><p>heart rate on test signals from 52 to 130 bpm</p></div>
-      <div class="rise" style="--i:4"><b data-count="86" data-suffix=" of 86">0 of 86</b><p>automated tests passing</p></div>
+      <div class="rise" style="--i:4"><b data-count="91" data-suffix=" of 91">0 of 91</b><p>automated tests passing</p></div>
     </div>
     <p class="source rise" style="--i:6">Simulated conversations and synthetic signals. The next measure is a hospital pilot.</p>
   </section>
@@ -665,7 +665,7 @@ h2.top { top: 196px; font-size: 44px; }
       <div class="rise" style="--i:2"><h3>Does it work at night?</h3><p>With room light, yes. In the dark, a low-cost infrared camera sees the eyes; that is our next hardware step.</p></div>
       <div class="rise" style="--i:3"><h3>What if he cannot read?</h3><p>Every tile has an icon and is spoken aloud in Darija, and a nurse's question needs only yes or no.</p></div>
       <div class="rise" style="--i:4"><h3>What if his eyes tire or he loses eye control?</h3><p>Selection slows down when he blinks more than usual. Head movement and a single switch are on our roadmap.</p></div>
-      <div class="rise" style="--i:5"><h3>Who sets it up?</h3><p>The nurse: an 8-second calibration, a QR code for her phone, and six home phrases she picks herself.</p></div>
+      <div class="rise" style="--i:5"><h3>Who sets it up?</h3><p>The nurse: a 15-second calibration, a QR code for her phone, and six home phrases she picks herself.</p></div>
     </div>
   </section>
 

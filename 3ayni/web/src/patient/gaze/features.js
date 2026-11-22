@@ -2,6 +2,16 @@
 // describes where the person is looking. Calibration later learns how these
 // features map to screen positions, so the exact sign conventions here do not
 // matter; they only need to be stable for one person in one sitting.
+//
+// Vertical gaze is the hard part, especially when the camera sits below the
+// screen (a phone propped under a monitor): the face is seen from below and the
+// iris moves very little between the top and the bottom of the screen. Three
+// signals carry it, and calibration learns how much each one counts:
+//   - the iris height measured against the line between the eye corners,
+//     scaled by the eye's width (stable, unlike the gap between the lids);
+//   - the eye opening: the upper lid rises when the eyes look up and drops
+//     when they look down;
+//   - the head's real pitch, from MediaPipe's 3D face pose when available.
 
 // Landmark indices in the 478-point MediaPipe face mesh.
 const EYE_A = { cornerOuter: 33, cornerInner: 133, top: 159, bottom: 145 };
@@ -13,14 +23,15 @@ const FACE_RIGHT = 454;
 const FOREHEAD = 10;
 const CHIN = 152;
 
-export const FEATURE_NAMES = ['irisX', 'irisY', 'lookX', 'lookY', 'headYaw', 'headPitch'];
+export const FEATURE_NAMES = ['irisX', 'irisY', 'irisHeight', 'eyeOpening', 'lookX', 'lookY', 'headYaw', 'headPitch'];
 
 /**
  * @param {Array<{x:number,y:number}>} landmarks
  * @param {Record<string, number>} blendshapes
+ * @param {ArrayLike<number>|null} [pose] MediaPipe facial transformation matrix (4x4, column-major)
  * @returns {number[] | null} feature vector in FEATURE_NAMES order, or null when the eyes are not usable
  */
-export function extractGazeFeatures(landmarks, blendshapes) {
+export function extractGazeFeatures(landmarks, blendshapes, pose = null) {
   if (!landmarks || landmarks.length < 478) return null;
 
   const eyeA = irisPosition(landmarks, EYE_A);
@@ -32,20 +43,32 @@ export function extractGazeFeatures(landmarks, blendshapes) {
   const lookX = (b('eyeLookOutLeft') + b('eyeLookInRight') - b('eyeLookInLeft') - b('eyeLookOutRight')) / 2;
   const lookY = (b('eyeLookUpLeft') + b('eyeLookUpRight') - b('eyeLookDownLeft') - b('eyeLookDownRight')) / 2;
 
-  // Head rotation proxies: where the nose sits between the face edges.
-  const faceWidth = distance(landmarks[FACE_LEFT], landmarks[FACE_RIGHT]);
-  const faceHeight = distance(landmarks[FOREHEAD], landmarks[CHIN]);
-  if (faceWidth < 1e-6 || faceHeight < 1e-6) return null;
-  const nose = landmarks[NOSE_TIP];
-  const headYaw = (nose.x - (landmarks[FACE_LEFT].x + landmarks[FACE_RIGHT].x) / 2) / faceWidth;
-  const headPitch = (nose.y - (landmarks[FOREHEAD].y + landmarks[CHIN].y) / 2) / faceHeight;
+  let headYaw;
+  let headPitch;
+  if (pose && pose.length >= 16) {
+    // The face's forward direction is the third column of the rotation.
+    headYaw = pose[8];
+    headPitch = pose[9];
+  } else {
+    // Fallback proxies: where the nose sits between the face edges.
+    const faceWidth = distance(landmarks[FACE_LEFT], landmarks[FACE_RIGHT]);
+    const faceHeight = distance(landmarks[FOREHEAD], landmarks[CHIN]);
+    if (faceWidth < 1e-6 || faceHeight < 1e-6) return null;
+    const nose = landmarks[NOSE_TIP];
+    headYaw = (nose.x - (landmarks[FACE_LEFT].x + landmarks[FACE_RIGHT].x) / 2) / faceWidth;
+    headPitch = (nose.y - (landmarks[FOREHEAD].y + landmarks[CHIN].y) / 2) / faceHeight;
+  }
 
-  return [(eyeA.x + eyeB.x) / 2, (eyeA.y + eyeB.y) / 2, lookX, lookY, headYaw, headPitch];
+  const mean = (k) => (eyeA[k] + eyeB[k]) / 2;
+  return [mean('x'), mean('y'), mean('height'), mean('opening'), lookX, lookY, headYaw, headPitch];
 }
 
 /**
- * Iris centre expressed in the eye's own frame: x from one corner (0) to the
- * other (1), y from the upper lid (0) to the lower lid (1).
+ * Iris centre in the eye's own frame:
+ *   x       along the corner-to-corner axis, 0 at one corner and 1 at the other;
+ *   y       from the upper lid (0) to the lower lid (1);
+ *   height  distance from the corner axis, in eye widths (positive = below it);
+ *   opening gap between the lids, in eye widths.
  */
 function irisPosition(landmarks, eye) {
   const outer = landmarks[eye.cornerOuter];
@@ -58,11 +81,17 @@ function irisPosition(landmarks, eye) {
   const axisY = end.y - start.y;
   const axisLength2 = axisX * axisX + axisY * axisY;
   if (axisLength2 < 1e-10) return null;
+  const axisLength = Math.sqrt(axisLength2);
 
   const x = ((iris.x - start.x) * axisX + (iris.y - start.y) * axisY) / axisLength2;
-  const lidGap = landmarks[eye.bottom].y - landmarks[eye.top].y;
-  const y = lidGap > 1e-4 ? (iris.y - landmarks[eye.top].y) / lidGap : 0.5;
-  return { x, y };
+  // Perpendicular distance to the axis (also cancels head roll).
+  const height = ((iris.y - start.y) * axisX - (iris.x - start.x) * axisY) / axisLength2;
+  const top = landmarks[eye.top];
+  const bottom = landmarks[eye.bottom];
+  const lidGap = bottom.y - top.y;
+  const y = lidGap > 1e-4 ? (iris.y - top.y) / lidGap : 0.5;
+  const opening = Math.hypot(bottom.x - top.x, bottom.y - top.y) / axisLength;
+  return { x, y, height, opening };
 }
 
 function nearestIris(landmarks, cornerA, cornerB) {

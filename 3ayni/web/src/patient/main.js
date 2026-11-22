@@ -15,7 +15,7 @@ import { BoardModel } from './board/board-model.js';
 import { learnWords } from './board/keyboard.js';
 import { BoardView } from './board/board-view.js';
 import { SUGGESTIBLE_IDS } from './board/phrases.js';
-import { FaceTracker } from './camera.js';
+import { FaceTracker, listCameras } from './camera.js';
 import { seedPredictor } from './care-routines.js';
 import { DevPanel } from './devpanel.js';
 import { CareMonitor, FAST_DEMO_RULES, RULES } from './fusion.js';
@@ -36,6 +36,7 @@ const DWELL_NORMAL_MS = 1400;
 const DWELL_SLOW_MS = 2200;
 const PREDICTOR_KEY = '3ayni.predictor.v1';
 const LEXICON_KEY = '3ayni.lexicon.v1';
+const CAMERA_KEY = '3ayni.camera.v1'; // the chosen camera, e.g. a phone used as a webcam
 const BOARD_KEY = '3ayni.board.v1'; // the nurse's home phrases and keyboard alphabet
 const QUESTION_TIMEOUT_MS = 3 * 60_000; // an unanswered question goes back to the home screen
 const PREVIOUS_MESSAGE_WINDOW_MS = 10 * 60_000; // older messages no longer count as "previous"
@@ -109,9 +110,17 @@ class BedsideApp {
     $('start-camera').disabled = true;
     $('start-camera').textContent = 'Starting camera…';
     try {
+      const chosen = $('camera-select').value || null;
+      saveJson(CAMERA_KEY, chosen);
       this.tracker = new FaceTracker($('video'));
-      await this.tracker.start();
+      try {
+        await this.tracker.start(chosen);
+      } catch (error) {
+        if (!chosen || error?.name === 'NotAllowedError') throw error;
+        await this.tracker.start(); // the saved camera is gone (phone unplugged): use the default one
+      }
       this.tracker.onFrame((frame) => this.onFrame(frame));
+      this.#fillCameras(); // names are known now, for the next start
       $('start-overlay').hidden = true;
       this.startCalibration();
     } catch (error) {
@@ -137,6 +146,8 @@ class BedsideApp {
       return;
     }
     this.calibration = new GazeCalibration();
+    $('calibration-message').textContent =
+      `Follow the dot with your eyes and keep your head still (about ${Math.round(this.calibration.durationMs / 1000)} seconds)`;
     this.gazeModel = null;
     this.view.setHover(null);
     $('calibration-overlay').hidden = false;
@@ -146,7 +157,7 @@ class BedsideApp {
     const result = this.calibration.finish();
     this.calibration = null;
     if (!result.ok) {
-      $('calibration-overlay').querySelector('.calibration-hint span:last-child').textContent =
+      $('calibration-message').textContent =
         `${result.reason}. Keep your face in view; starting again…`;
       setTimeout(() => this.startCalibration(), 1500);
       return;
@@ -154,11 +165,14 @@ class BedsideApp {
     $('calibration-overlay').hidden = true;
     this.gazeModel = result.model;
     this.calibrationError = result.error;
+    this.calibrationAxes = { x: result.errorX, y: result.errorY };
     this.filterX.reset();
     this.filterY.reset();
     this.selection.reset(performance.now());
-    if (result.error > 0.18) {
-      this.setBanner('Calibration', 'Imprecise. Recalibrate from Settings if tiles are hard to reach', 'attention');
+    // The error is measured on dots left out of the fit, so it is honest about new positions.
+    if (result.error > 0.2) {
+      const axis = result.errorY > result.errorX ? 'up and down' : 'left and right';
+      this.setBanner('Calibration', `Imprecise ${axis}. Keep the head still and press C to recalibrate`, 'attention');
     } else {
       this.setBanner('Ready', 'Look at a tile to choose it');
     }
@@ -169,7 +183,7 @@ class BedsideApp {
   /** @param {import('./camera.js').FaceFrame} frame */
   onFrame(frame) {
     this.lastFrame = frame;
-    const { t, landmarks, blendshapes } = frame;
+    const { t, landmarks, blendshapes, pose } = frame;
 
     const skin = this.sampler.sample(frame.video, landmarks);
     const now = Date.now();
@@ -180,7 +194,7 @@ class BedsideApp {
     }
 
     const closure = landmarks ? eyeClosure(blendshapes) : 0;
-    const features = landmarks && closure < 0.5 ? extractGazeFeatures(landmarks, blendshapes) : null;
+    const features = landmarks && closure < 0.5 ? extractGazeFeatures(landmarks, blendshapes, pose) : null;
 
     if (this.calibration) {
       const state = this.calibration.update(t, features);
@@ -616,7 +630,10 @@ class BedsideApp {
       Face: frame?.landmarks ? 'detected' : 'not found',
       'Eye closure': frame?.landmarks ? fmt(eyeClosure(frame.blendshapes), 2) : '--',
       Gaze: this.lastGaze ? `${fmt(this.lastGaze.x, 2)}, ${fmt(this.lastGaze.y, 2)}` : '--',
-      'Calibration error': this.calibrationError === null ? '--' : `${fmt(this.calibrationError * 100)}% of screen`,
+      'Calibration error':
+        this.calibrationError === null
+          ? '--'
+          : `${fmt(this.calibrationError * 100)}% of screen (left-right ${fmt(this.calibrationAxes.x * 100)}%, up-down ${fmt(this.calibrationAxes.y * 100)}%)`,
       'Blinks / min': String(this.selection.blinkRate(performance.now())),
       'Dwell time': `${this.selection.dwellMs} ms`,
       'Pulse buffer': `${fmt(e?.bufferedSeconds, 1)} s`,
@@ -650,7 +667,20 @@ class BedsideApp {
     }
   }
 
+  /** Fills the camera list on the start screen; remembers the last choice. */
+  async #fillCameras() {
+    const select = $('camera-select');
+    // Before the first camera permission the browser hides camera ids: list nothing then.
+    const cameras = (await listCameras().catch(() => [])).filter((c) => c.id);
+    const saved = loadJson(CAMERA_KEY);
+    select.replaceChildren(new Option('Default camera', ''), ...cameras.map((c) => new Option(c.label, c.id)));
+    if (saved && cameras.some((c) => c.id === saved)) select.value = saved;
+    $('camera-row').hidden = cameras.length < 2 && !saved;
+  }
+
   #bindUi() {
+    this.#fillCameras();
+    navigator.mediaDevices?.addEventListener?.('devicechange', () => this.#fillCameras());
     $('start-camera').addEventListener('click', () => {
       unlockAudio();
       this.startCamera();

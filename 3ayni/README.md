@@ -32,7 +32,7 @@ npm start          # builds and starts the server on port 3000
 ```
 
 1. On the laptop, open **http://localhost:3000** and click **Start camera**.
-2. Follow the dot with your eyes for about 8 seconds (calibration).
+2. Follow the dot with your eyes for about 15 seconds, head still (calibration). With a phone used as a webcam, choose it in the **Camera** list first.
 3. Press **P** to show the pairing QR code. Scan it with a phone on the same Wi-Fi or hotspot.
 
 No camera? Click **Continue without camera** and use the mouse or the number keys.
@@ -69,7 +69,7 @@ camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device
               │
               ├─> gaze features ──> personal calibration ──> One Euro filter ──> tile ──> dwell (eyes open)
               │   (iris position,     (ridge regression,       (smooth when still,             │
-              │    eye rotation,       5 dots, ~8 s)            responsive when moving)        ▼
+              │    eye rotation,       9 dots, ~15 s)            responsive when moving)        ▼
               │    head pose)                                              board ──> speech + message ──┐
               │                                                              ▲                          │
               │                                        suggestions (phrase model)                       │
@@ -86,7 +86,7 @@ The jury asked for purposeful AI. Each part uses the simplest tool that works:
 | Part | Approach | Why |
 |---|---|---|
 | Face and eye tracking | Neural network (MediaPipe Face Landmarker) | Cannot be done with rules |
-| Gaze → screen position | Ridge regression, fitted per person | Every face and camera position differs; a learned mapping absorbs it in 8 s |
+| Gaze → screen position | Ridge regression, fitted per person | Every face and camera position differs; a learned mapping absorbs it in 15 s |
 | Pulse from video | POS signal processing (Wang et al., IEEE TBME 2017) + spectral analysis | A published method that is explainable, fast and needs no training data |
 | Phrase suggestions | Probabilistic model (what follows what × time of day × distress) | Runs instantly offline, explains itself, learns this patient's habits; a large language model would be slower, opaque and need the internet |
 | Alerts | **Transparent rules** with hysteresis | Clinical alerts must be predictable; every alert states its reason |
@@ -134,7 +134,7 @@ Run them yourself: `npm test` and `npm run evaluate:predictor`.
 │     ├─ caregiver/main.js
 │     ├─ shared/              protocol, relay link, icons, sound, storage
 │     └─ styles/
-└─ test/                      86 unit tests (vitest)
+└─ test/                      91 unit tests (vitest)
 ```
 
 ## Limits and next steps

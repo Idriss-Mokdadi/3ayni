@@ -114,7 +114,7 @@ A **medical device** that diagnoses must be certified (CE marking in Europe, the
 | **Express 5** | A small web server framework for Node. | Serves the built pages to the laptop and the phone. |
 | **WebSocket** (`ws` library) | A permanent two-way connection between browser and server. | Instant messages between the bedside and the phones. |
 | **qrcode** | Generates QR codes. | The pairing code a phone scans. |
-| **Vitest** | A test runner for JavaScript. | 86 automated tests. |
+| **Vitest** | A test runner for JavaScript. | 91 automated tests. |
 | **Lucide** | An open-source icon set. | Icons on the tiles. |
 | **IBM Plex Sans / Sans Arabic** | Open-source fonts. | Readable Latin and Arabic text. |
 
@@ -152,33 +152,42 @@ Finding a face and its exact points in any lighting, skin tone, angle and with g
 
 ### 5.1 Features: describing where the eyes point
 
-`features.js` turns the 478 points into **six numbers**:
+`features.js` turns the 478 points into **eight numbers**:
 
 | Feature | How it is computed | What it captures |
 |---|---|---|
-| `irisX`, `irisY` | Position of the iris centre between the eye corners and between the eyelids, averaged over both eyes | Eye rotation, measured geometrically |
+| `irisX` | Position of the iris centre between the two eye corners, averaged over both eyes | Eyes turning left or right |
+| `irisY` | Position of the iris between the upper and lower lids | Up and down, when the camera faces the eyes |
+| `irisHeight` | Distance of the iris from the line joining the eye corners, in eye widths | Up and down, stable even when the lids move |
+| `eyeOpening` | Gap between the lids, in eye widths | Up and down: the upper lid rises when the eyes look up and drops when they look down |
 | `lookX`, `lookY` | Combination of the `eyeLookIn/Out/Up/Down` blendshapes | Eye rotation, as estimated by the network |
-| `headYaw`, `headPitch` | Where the nose tip sits between the face edges and between forehead and chin | Head turning left/right and up/down |
+| `headYaw`, `headPitch` | The real 3D head angles from MediaPipe's face pose (or, if missing, where the nose sits between the face edges) | Head turning left/right and up/down |
 
-Some patients move only their eyes and others move their head, so both are included and calibration decides how much each counts for this person.
+**Why vertical gaze needs extra signals.** Up-and-down is the hard direction, and it gets harder when the camera is not in front of the eyes, for example **a phone used as a webcam, placed below the screen**. The face is then seen from below, and the iris moves very little between the top and the bottom of the screen. The eye opening and the iris height still change clearly, and the head pose tells how the head is tilted, so calibration can rely on them instead.
 
 ### 5.2 Calibration: a model fitted to each person
 
-**File:** `calibration.js`. The patient looks at **5 dots** (centre, left, right, top, bottom) for about 8 seconds in total. At each dot, the first 0.7 s are ignored (the eyes travel and settle), then 1 s of features is recorded.
+**File:** `calibration.js`. The patient looks at **9 dots**: the centre, then a 3 × 3 grid reaching the corners, where the tiles are (about 15 seconds). At each dot, the first 0.65 s are ignored (the eyes travel and settle), then 1 s of features is recorded.
 
-The result is pairs of *(six features → known screen position)*. A model learns the mapping:
+Three things make it hold up with an awkward camera position:
+
+1. **Noisy frames are dropped.** At each dot, frames far from the median (a blink, a glance away, a late eye movement) are left out before fitting. The test injects one bad frame in five and the result stays accurate.
+2. **Curved terms.** Besides the eight features, the model also gets their squares and a cross term (`irisX²`, `irisHeight²`, `irisX × irisHeight`, `lookX²`, `lookY²`). Near the edges of the screen the eyes move less for the same distance, and a straight line can't follow that.
+3. **The model is judged on dots it did not see.** Several penalty strengths are tried. For each one, every dot is left out in turn, the model is fitted on the other eight, and the left-out dot is predicted. The strength that predicts unseen dots best wins. The error shown after calibration is measured the same way, per axis (left-right and up-down), so it is honest about new positions rather than flattering.
 
 ### 5.3 Ridge regression, explained simply
 
 **File:** `ridge.js`
 
-- **Linear regression** finds the weights *w* so that `screen x ≈ w0 + w1·irisX + w2·irisY + … + w6·headPitch`, by minimising the squared error over all the calibration samples. It is the classic "line of best fit", with six inputs.
-- **The problem:** with few samples and features that are strongly related (iris position and blendshape look scores measure almost the same thing), plain regression can choose huge weights that cancel each other. It then fits the calibration perfectly but goes wild on new data. This is called **overfitting**.
-- **Ridge regression** adds a penalty `λ·(sum of the squared weights)` (here λ = 0.5, on standardised features). The model now prefers small, balanced weights. It is a little less exact on the calibration dots and **much more stable afterwards**.
+- **Linear regression** finds the weights *w* so that `screen x ≈ w0 + w1·irisX + w2·irisY + …`, by minimising the squared error over all the calibration samples. It is the classic "line of best fit", with many inputs.
+- **The problem:** with few distinct positions and features that are strongly related (iris position and blendshape look scores measure almost the same thing), plain regression can choose huge weights that cancel each other. It then fits the calibration perfectly but goes wild on new data. This is called **overfitting**.
+- **Ridge regression** adds a penalty `λ·(sum of the squared weights)`. The model prefers small, balanced weights: a little less exact on the calibration dots, **much more stable afterwards**. λ is chosen by the leave-one-dot-out test above.
 - One model is fitted for x and one for y. Fitting takes milliseconds, so it can be redone any time (`C` key).
-- **Why this is "purposeful AI":** every face, camera position and person differs. A fixed formula cannot work for everyone; a small learned model, fitted in 8 seconds, absorbs those differences.
+- **Why this is "purposeful AI":** every face, camera position and person differs. A fixed formula cannot work for everyone; a small learned model, fitted in 15 seconds, absorbs those differences.
 
-The **calibration error** (average distance between predicted and true dot position) is shown. Above 18 % of the screen, the app suggests recalibrating.
+After calibration, if the error is above 20 % of the screen, the banner says which direction is imprecise (up-down or left-right) and suggests recalibrating with the head still.
+
+**Choosing the camera.** When several cameras are connected (the laptop's own and a phone used as a webcam), the start screen shows a **Camera** list. The choice is remembered, and if that camera is unplugged the default one is used.
 
 ### 5.4 The One Euro filter: steady but responsive
 
@@ -476,11 +485,11 @@ This is **privacy by design**: rather than protecting video on a server, there i
 npm test
 ```
 
-**86 automated tests in 5 files:**
+**91 automated tests in 5 files:**
 
 | File | What it proves |
 |---|---|
-| `test/gaze.test.js` | Ridge regression recovers known weights; calibration maps features to the right positions; the One Euro filter smooths without lag; dwell, cooldown and hysteresis behave as specified; closing the eyes cancels a choice and never selects. |
+| `test/gaze.test.js` | Ridge regression recovers known weights; nine-dot calibration maps features to the right positions, also for a simulated camera below the screen and with blinks mixed in; iris height, eye opening and head pose are measured; the One Euro filter smooths without lag; dwell, cooldown and hysteresis behave as specified; closing the eyes cancels a choice and never selects. |
 | `test/vitals.test.js` | The FFT finds the right frequency; POS cancels pure lighting changes; the estimator measures 52, 72, 95 and 130 bpm within 3 bpm; it ignores a 1.5 Hz flicker; the band-pass removes slow drift (new); it is not fooled by colour drift near the band's bottom (new); it restarts after an exposure jump (new); pure noise gives "poor" and no number. |
 | `test/roi.test.js` | The regions are placed correctly and the pixel averaging is exact. |
 | `test/logic.test.js` | Every screen fills its grid; the nurse's home phrases; yes/no questions; keyboard pages, keys and suggestions (letters, words, heart rate); screen-sleep timing; suggestions; every care-monitor rule; the protocol, including the nurse's board settings. |

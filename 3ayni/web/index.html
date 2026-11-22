@@ -61,8 +61,12 @@
         <ul class="facts">
           <li><span data-icon="eye-off"></span>Video is processed on this computer and never stored or sent.</li>
           <li><span data-icon="heart-pulse"></span>Heart rate is a camera estimate. It adds to clinical monitors, never replaces them.</li>
-          <li><span data-icon="scan-eye"></span>A short calibration follows: look at each dot until it moves.</li>
+          <li><span data-icon="scan-eye"></span>A short calibration follows: look at each dot until it moves. Keep your head still.</li>
         </ul>
+        <label class="camera-row" id="camera-row" hidden>
+          <span>Camera</span>
+          <select id="camera-select"><option value="">Default camera</option></select>
+        </label>
         <div class="start-actions">
           <button class="btn btn-primary" id="start-camera" type="button">Start camera</button>
           <button class="btn" id="start-manual" type="button">Continue without camera</button>
@@ -76,7 +80,7 @@
       <div class="calibration-dot" id="calibration-dot"></div>
       <p class="calibration-hint">
         <span lang="ar">شوف النقطة</span>
-        <span>Follow the dot with your eyes</span>
+        <span id="calibration-message">Follow the dot with your eyes and keep your head still</span>
       </p>
       <div class="calibration-progress"><span id="calibration-progress"></span></div>
     </section>

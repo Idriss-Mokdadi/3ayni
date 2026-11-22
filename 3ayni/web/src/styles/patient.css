@@ -903,3 +903,43 @@ body {
 .start-error {
   font-size: clamp(14px, 1.1vw, 20px);
 }
+
+/* Camera choice on the start screen (a phone used as a webcam, for example) */
+.camera-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-5);
+  font-size: clamp(15px, 1.3vw, 24px);
+}
+
+.camera-row[hidden] {
+  display: none;
+}
+
+.camera-row select {
+  min-height: clamp(40px, 3.2vw, 60px);
+  min-width: 0;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.camera-row select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Calibration instructions readable on large screens */
+.calibration-hint {
+  width: min(90vw, 1100px);
+  font-size: clamp(15px, 1.4vw, 26px);
+}
+
+.calibration-hint [lang='ar'] {
+  font-size: clamp(24px, 2.4vw, 44px);
+}
