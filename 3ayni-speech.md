@@ -1,7 +1,7 @@
 # 3ayni pitch: speech, live demo and Q&A answers
 
 **Event:** IEEE Tech4Health 2.0. **Team:** Eddes Eddes A777 (Mohamed Idriss Mokdadi, Ahmed Ammar).
-**Length:** 4 minutes including the demo, then 2 minutes of questions. **Language:** English.
+**Length:** 2 minutes 30 seconds including the demo, then the questions. **Language:** English.
 **Deck:** `pitch/html2/3ayni-through-his-eyes.html` (press **N** to see these notes on screen, **T** for the timer).
 
 **The one sentence the jury must remember:**
@@ -9,102 +9,87 @@
 
 **Who speaks.** Suggested split: **Idriss** speaks the whole pitch. **Ahmed** sits in front of the laptop as the patient for the demo, already calibrated before the pitch starts, and holds the nurse's phone up for the jury. Change it if you prefer; the script works with one speaker.
 
-**Timing:** about 420 spoken words at 120 words per minute (about 3 min 30 s); the demo lines are spoken while the app works, so the total is about 4 minutes. Rehearse with **T**. If you run long, skip slides 6, 16 and 17 with one click each.
+**Timing:** about 230 spoken words (about 1 min 55 s); part of the demo text is said while waiting for the alert, and the clicks add about 15 s: about 2 min 30 s in total. Many slides get just a click: their image says it for you. Rehearse with **T**. If you run long, click through slides 16 and 17 without speaking.
 
 ---
 
 ## The script
 
 ### 1. Cover: the eye video
-<!-- 0:35 | 68 words -->
-In 1995, a French magazine editor, Jean-Dominique Bauby, had a stroke.
-His mind was intact. But he could move only his left eyelid. [pause]
-And he wrote a book with it.
-Someone read the alphabet aloud, the most used letters first.
-He blinked at each letter. About two hundred thousand blinks. [pause 3 s]
+<!-- 0:15 | 34 words -->
+In 1995, Jean-Dominique Bauby could move only his left eyelid.
+He still wrote a book: two hundred thousand blinks. [pause]
 Thirty years later, our patients still talk like that.
-We are team Eddes Eddes A777. This is 3ayni. [click: we dive into the eye]
+We are Eddes Eddes A777. This is 3ayni. [click: we dive into the eye]
 
 ### 2. Silence
-<!-- 0:10 | 22 words -->
-We are now inside the eye of Am Hédi, a patient in a Tunisian ward.
-He hears everything. He understands everything. [pause] He cannot say one word. [click]
+<!-- 0:05 | 13 words -->
+We are inside Am Hédi's eye. He hears everything. He cannot say one word. [click]
 
 ### 3. The question
-<!-- 0:08 | 15 words -->
-His nurse, Karim, asks: if you hear me, blink once. [click: the eye blinks]
-One blink. That is all he has. [click]
+<!-- 0:05 | 7 words -->
+[click: the eye blinks once] One blink. That is all he has. [click]
 
 ### 4. The problem
-<!-- 0:02 | silent -->
-[click straight on: the slide says it for you]
+<!-- 0:01 | silent -->
+[click straight on]
 
 ### 5. Today: blink codes
-<!-- 0:12 | 18 words -->
-So Karim guesses. Water? [click] No. The light? [click] No. Turn over? [click] No. [click]
-He wanted to say: I am in pain. [pause] [click]
+<!-- 0:07 | 12 words -->
+Today, the nurse guesses. [click] [click] [click] [click]
+He wanted to say: I am in pain. [click]
 
-### 6. Today: letter boards
-<!-- 0:07 | 13 words -->
-Or a letter board, like Bauby. Forty seconds of his time for one word. [click]
-
-### 7. Today: the call button
-<!-- 0:06 | 12 words -->
-The call button is in his hand. His hand cannot press it. [click]
+### 6–7. Letter boards, call button
+<!-- 0:02 | silent -->
+[click] [click]
 
 ### 8. No solution does all three
-<!-- 0:12 | 25 words -->
-Eye-gaze tablets cost thousands of euros. Monitors see the heart, not the words.
+<!-- 0:06 | 13 words -->
 Nothing today lets him speak, notices his distress, and tells the nurse. [click] [click past "Try it"]
 
 ### 10. The solution
-<!-- 0:10 | 22 words -->
+<!-- 0:09 | 22 words -->
 3ayni does all three, with one laptop camera.
-He looks at a tile, the laptop says it in Darija.
+He looks, and the laptop speaks in Darija.
 The same camera reads his heart rate. [click]
 
 ### 11. Made for day and night
-<!-- 0:12 | 27 words -->
-The nurse chooses his phrases from her phone.
-A keyboard puts the most used letters first, like Bauby's alphabet, with suggestions.
-And closed eyes choose nothing. [click] [click past "How it works"]
+<!-- 0:07 | 17 words -->
+The nurse picks his phrases. The keyboard puts frequent letters first. Closed eyes choose nothing. [click] [click past "How it works"]
 
 ### 13. Live demo
-<!-- 1:00 | about 60 words + 40 s of action -->
-Let's see it live. Ahmed is our patient. [Alt+Tab to the app]
-Ahmed, look at "I want to drink". [the ring fills; the laptop says نحب نشرب]
-The message is already on Karim's phone, with his heart rate. [Ahmed holds the phone up]
-Now we simulate a crisis. His heart rate rises: you see the word "Simulation" on both screens. [press S]
-The laptop compares it with his own normal, learned when he arrived.
-It does not alarm at once: the rise must last. [about 14 s after S, the phone shows "Heart rate elevated"]
-Now he says: I am in pain. [Ahmed looks at "I am in pain"]
-Pain and a racing heart: an urgent alert, with its reason.
-Karim taps "I'm on my way". [tap] Am Hédi sees: help is coming. [Alt+Tab back] [click]
+<!-- 0:50 | about 55 words while the app works -->
+Ahmed is our patient. [Alt+Tab to the app]
+He looks at "I want to drink". [ring fills; the laptop speaks] It is already on the nurse's phone.
+Now a simulated crisis: his heart rate rises. [press S]
+The rise must last before any alarm. [about 14 s: the phone shows "Heart rate elevated"]
+He says: I am in pain. [Ahmed looks at the tile]
+Pain and a racing heart: urgent alert, with its reason.
+The nurse taps: I'm on my way. [tap] [Alt+Tab back] [click]
 
 ### 14. AI where it matters
-<!-- 0:02 | silent; say it only if you are ahead of time -->
-[click straight on] *(If ahead of time: "We use AI only where rules cannot work: the face and each patient's gaze. Alerts stay simple rules.")*
+<!-- 0:01 | silent -->
+[click straight on]
 
 ### 15. What we measured
-<!-- 0:08 | 18 words -->
-On test signals, the heart rate stays within three beats. Ninety-six tests pass. A hospital pilot comes next. [click]
+<!-- 0:05 | 11 words -->
+Ninety-six tests pass. A hospital pilot comes next. [click]
 
 ### 16. Private and honest
-<!-- 0:06 | 15 words -->
-The video never leaves the laptop. A weak signal shows a dash, never a guess. [click]
+<!-- 0:04 | 8 words -->
+The video never leaves the laptop. [click]
 
 ### 17. Scaling
-<!-- 0:07 | 14 words -->
-Next: a cheap infrared camera for the night, one pilot ward, then homes. [click]
+<!-- 0:04 | 8 words -->
+Next: an infrared camera for the night. [click]
 
 ### 18. Vision
 <!-- 0:05 | 16 words -->
 [slower] Our vision: a voice for every patient who cannot speak, from a camera already in the room. [click]
 
 ### 19. Close
-<!-- 0:15 | 30 words -->
-Bauby needed two hundred thousand blinks to write one book.
-Am Hédi needs one look to say: I am in pain. [pause]
+<!-- 0:12 | 22 words -->
+Bauby needed two hundred thousand blinks. Am Hédi needs one look. [pause]
 His eyes speak. His heart is heard. [click: the eye closes]
 Thank you.
 
@@ -129,11 +114,11 @@ Thank you.
 
 ## Memory sheet
 
-**Say word for word:** "In 1995, a French magazine editor, Jean-Dominique Bauby, had a stroke."
-**Last lines word for word:** "Bauby needed two hundred thousand blinks to write one book. Am Hédi needs one look to say: I am in pain. His eyes speak. His heart is heard."
+**Say word for word:** "In 1995, Jean-Dominique Bauby could move only his left eyelid. He still wrote a book: two hundred thousand blinks."
+**Last lines word for word:** "Bauby needed two hundred thousand blinks. Am Hédi needs one look. His eyes speak. His heart is heard."
 
 **One key word per slide:**
-Bauby → silence → one blink → (click) → guesses → letter board → button → all three → one camera → day and night → **demo** (drink, phone, stress, wait for "elevated", pain, urgent, on my way) → (click) → three beats → never leaves → infrared → vision → one look.
+Bauby → inside the eye → one blink → (click) → guesses → (click, click) → all three → one camera → day and night → **demo** (drink, phone, S, wait for "elevated", pain, urgent, on my way) → (click) → 96 tests → never leaves → infrared → vision → one look.
 
 ---
 
@@ -194,8 +179,9 @@ The app works end to end and 96 automated tests pass. The suggestion results com
 
 ## Other hook options (if you prefer another opening)
 
-1. **Bauby's blinks (used above).** Genre: modern historical event (France, 1995–1997). Pattern: mirror story (A1).
-   `true ✓ (2 sources) | fits the core message ✓ (same frequency alphabet as our keyboard) | surprise high | 35 s ✓ | easy to say ✓ | callback ✓ (blinks vs one look)`
+1. **Bauby's blinks (used above, short version).** Genre: modern historical event (France, 1995–1997). Pattern: mirror story (A1).
+   `true ✓ (2 sources) | fits the core message ✓ | surprise high | 15 s ✓ | easy to say ✓ | callback ✓ (blinks vs one look)`
+   Longer version if you get more time: "In 1995, a French magazine editor, Jean-Dominique Bauby, had a stroke. His mind was intact. But he could move only his left eyelid. And he wrote a book with it. Someone read the alphabet aloud, the most used letters first. He blinked at each letter. About two hundred thousand blinks." 
 2. **Stephen Hawking's cheek.** Genre: science. Pattern: mirror story.
    "Stephen Hawking explained the universe with one muscle in his cheek. A sensor on his glasses saw it move. In 2013 he managed about one or two words per minute. He had Intel's engineers. Our patients have a nurse who guesses."
    `true ✓ (Intel CTO figure, 2013) | fits ✓ | surprise medium | 20 s ✓ | easy ✓ | callback medium`
