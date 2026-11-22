@@ -252,6 +252,18 @@ h2.top { top: 196px; font-size: 44px; }
 .figures p { margin-top: 20px; font-size: 23px; line-height: 1.36; color: var(--soft); }
 .source { position: absolute; left: 0; right: 0; top: 560px; text-align: center; font-size: 18px; color: var(--dim-text); }
 
+/* Scaling roadmap */
+.roadmap { position: absolute; left: 260px; right: 260px; top: 280px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px; }
+.roadmap h3 { font-size: 28px; font-weight: 600; margin-bottom: 16px; }
+.roadmap div:nth-child(2) h3 { color: var(--red); }
+.roadmap p { font-size: 20px; line-height: 1.4; color: var(--soft); margin-bottom: 12px; }
+.roadmap strong { color: var(--white); }
+.roadmap-note { top: 640px; }
+
+/* Vision */
+.vision-text { top: 290px; width: 760px; }
+.vision-text p { margin-top: 22px; font-size: 40px; line-height: 1.2; color: var(--soft); }
+
 /* Next */
 .two-lists { margin-top: 44px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; }
 .two-lists h3 { font-size: 26px; font-weight: 600; margin-bottom: 14px; }

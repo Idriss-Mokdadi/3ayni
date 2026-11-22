@@ -236,7 +236,7 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
   - rushes in when the alarm turns the ward red.
 - **His lines** are in Darija, with English subtitles.
 
-**The 17 slides**
+**The 18 slides**
 
 | # | Slide | What happens |
 |---|---|---|
@@ -255,8 +255,9 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
 | 13 | AI where it matters | The AI versus rules table |
 | 14 | Proof | 37 %, ± 3 bpm, 67 of 67, counted up on screen |
 | 15 | Trust | Privacy and responsible AI |
-| 16 | Next | Pilot, recorded voices, nurse station view |
-| 17 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
+| 16 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
+| 17 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
+| 18 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
 
 **Controls:** → or Space next, ← back, **N** speaker notes, **T** timer, **A** auto-play, **F** fullscreen. Clicks during a blink are ignored, so slides never stack up.
 
@@ -278,7 +279,7 @@ cd "E:\IEEE\Tech4Health 2.0\pitch\html2"
 node pack.mjs
 ```
 
-**Verified.** In headless Chrome, all 17 slides render with no page errors, including:
+**Verified.** In headless Chrome, all 18 slides render with no page errors, including:
 
 - the dive into the eye;
 - half-closed and closed blinks;
