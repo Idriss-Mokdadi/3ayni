@@ -1,0 +1,399 @@
+{
+ "lib": "E:/claude-skills/Presentations/pro-pptx-studio-skill/template-library",
+ "base": "remote-patient-monitoring-system-pitch-deck-by-s",
+ "out": "3ayni-pitch.pptx",
+ "motion": "auto",
+ "lang": "en",
+ "talk": {
+  "minutes": 4,
+  "wpm": 130
+ },
+ "slides": [
+  {
+   "use": "#1",
+   "text": {
+    "Google Shape;184;p28": "3ayni",
+    "Google Shape;185;p28": "A voice and a pulse monitor for patients who cannot speak or move"
+   },
+   "notes": "Imagine being fully awake, in pain, and unable to say a single word. Many Tunisian patients live this every day. We built 3ayni, my eyes, to give them a voice."
+  },
+  {
+   "use": "#4",
+   "text": {
+    "Google Shape;218;p31": "Problem Statement"
+   },
+   "notes": "After a stroke, with ALS, or on a breathing tube, many patients understand everything but cannot speak or move. Families guess from blinks, eye-gaze devices cost thousands of dinars, and nobody hears their silent distress.",
+   "remove": [
+    "Google Shape;219;p31"
+   ],
+   "add": [
+    {
+     "kit": "bullets",
+     "box": [
+      0.45,
+      0.36,
+      0.47,
+      0.46
+     ],
+     "size": 28,
+     "items": [
+      "Awake and aware, but unable to speak or move",
+      "After a stroke, with ALS, or on a breathing tube",
+      "Today: blinking while a relative guesses",
+      "Eye-gaze devices cost thousands of dinars",
+      "Silent distress goes unnoticed"
+     ]
+    }
+   ]
+  },
+  {
+   "use": "#7",
+   "text": {
+    "Google Shape;263;p34": "Our Solution",
+    "Google Shape;264;p34": "Communicate",
+    "Google Shape;266;p34": "The patient looks at a tile; the phrase is spoken in Darija",
+    "Google Shape;265;p34": "Monitor",
+    "Google Shape;267;p34": "The same camera reads the heart rate from the face",
+    "Google Shape;269;p34": "Alert",
+    "Google Shape;268;p34": "Pain plus a racing heart reaches the nurse's phone"
+   },
+   "remove": [
+    "Google Shape;273;p34",
+    "Google Shape;278;p34",
+    "Google Shape;282;p34"
+   ],
+   "copy": [
+    {
+     "from": "remote-patient-monitoring-system-pitch-deck-by-s#21",
+     "shape": "Google Shape;803;p48",
+     "box": [
+      0.172,
+      0.365,
+      0.056,
+      0.07
+     ]
+    },
+    {
+     "from": "remote-patient-monitoring-system-pitch-deck-by-s#21",
+     "shape": "Google Shape;750;p48",
+     "box": [
+      0.476,
+      0.352,
+      0.048,
+      0.085
+     ]
+    },
+    {
+     "from": "remote-patient-monitoring-system-pitch-deck-by-s#21",
+     "shape": "Google Shape;623;p48",
+     "box": [
+      0.776,
+      0.352,
+      0.048,
+      0.08
+     ]
+    }
+   ],
+   "notes": "3ayni turns any laptop into a voice and a monitor. The patient looks at a tile and the phrase is spoken in Darija. The same camera reads the heart rate. Pain plus a racing heart sends an urgent alert to the nurse's phone."
+  },
+  {
+   "use": "#15",
+   "text": {
+    "Google Shape;428;p42": "How It Works",
+    "Google Shape;429;p42": "The camera films the face, on this laptop only",
+    "Google Shape;430;p42": "AI tracks the eyes and 478 face points",
+    "Google Shape;431;p42": "The gaze selects one of six large tiles",
+    "Google Shape;432;p42": "Tiny skin colour changes reveal the pulse",
+    "Google Shape;433;p42": "Rules combine the words and the heart rate",
+    "Google Shape;434;p42": "The caregiver's phone gets the message and alert",
+    "Google Shape;435;p42": "1",
+    "Google Shape;436;p42": "2",
+    "Google Shape;437;p42": "3",
+    "Google Shape;438;p42": "4",
+    "Google Shape;439;p42": "5",
+    "Google Shape;440;p42": "6"
+   },
+   "notes": "Everything runs in the browser on the bedside laptop. A face model tracks the eyes, and an eight-second calibration learns this patient's gaze. Each heartbeat slightly changes skin colour, which gives the heart rate. Clear rules combine words and body, and the phone gets the result."
+  },
+  {
+   "use": "#6",
+   "canvas": {
+    "keep": [
+     "Google Shape;233;p33"
+    ]
+   },
+   "text": {
+    "Google Shape;233;p33": "Live Demo"
+   },
+   "add": [
+    {
+     "kit": "mockup",
+     "screenshot": "assets/bedside-16x10.png",
+     "device": "laptop",
+     "glow": true,
+     "box": [
+      0.05,
+      0.25,
+      0.6,
+      0.66
+     ]
+    },
+    {
+     "kit": "mockup",
+     "screenshot": "assets/caregiver.png",
+     "device": "phone",
+     "glow": true,
+     "box": [
+      0.71,
+      0.21,
+      0.22,
+      0.74
+     ]
+    }
+   ],
+   "notes": "Live demo, about ninety seconds. A jury member follows five dots to calibrate, then says I want to drink with their eyes, and the laptop speaks it. Their heart rate appears on screen and on the phone. We start the stress scenario, answer pain, and the phone shows an urgent alert. One tap, and the patient sees help is coming."
+  },
+  {
+   "use": "#13",
+   "canvas": {
+    "keep": [
+     "Google Shape;363;p40"
+    ]
+   },
+   "text": {
+    "Google Shape;363;p40": "Purposeful AI"
+   },
+   "add": [
+    {
+     "kit": "table",
+     "box": [
+      0.08,
+      0.25,
+      0.84,
+      0.64
+     ],
+     "header": true,
+     "col_widths": [
+      0.28,
+      0.38,
+      0.34
+     ],
+     "rows": [
+      [
+       "Part",
+       "Approach",
+       "Why"
+      ],
+      [
+       "Eye and face tracking",
+       "Neural network (MediaPipe)",
+       "Impossible with rules"
+      ],
+      [
+       "Gaze to screen",
+       "Personal calibration, 8 s",
+       "Every face is different"
+      ],
+      [
+       "Pulse from video",
+       "Published signal method",
+       "Explainable, no training data"
+      ],
+      [
+       "Phrase suggestions",
+       "On-device probability model",
+       "Offline, learns the patient"
+      ],
+      [
+       "Alerts",
+       "Transparent rules",
+       "Predictable for nurses"
+      ]
+     ]
+    }
+   ],
+   "notes": "We used AI only where rules cannot work: tracking the eyes and learning each patient's gaze. The pulse uses a published signal method with no training data, suggestions use a small offline model, and alerts are simple rules a nurse can trust."
+  },
+  {
+   "use": "#10",
+   "text": {
+    "Google Shape;327;p37": "37 %",
+    "Google Shape;328;p37": "fewer selections per message",
+    "Google Shape;326;p37": "± 3 bpm",
+    "Google Shape;325;p37": "heart rate on test signals",
+    "Google Shape;329;p37": "63 / 63",
+    "Google Shape;330;p37": "automated tests passing"
+   },
+   "add": [
+    {
+     "kit": "text",
+     "role": "title",
+     "paras": [
+      "Tests and Validation"
+     ],
+     "box": [
+      0.51,
+      0.07,
+      0.43,
+      0.1
+     ],
+     "align": "c",
+     "size": 44
+    }
+   ],
+   "notes": "Suggestions cut the effort of a message by 37 percent, measured on 2,000 simulated conversations the model never saw. On test signals the heart rate stays within 3 beats, even under flickering light, and all 63 automated tests pass. Real-world accuracy against a pulse oximeter comes next."
+  },
+  {
+   "use": "#8",
+   "text": {
+    "Google Shape;296;p35": "Responsible AI",
+    "Google Shape;301;p35": "Video stays on the laptop",
+    "Google Shape;297;p35": "Frames are processed in the browser, never stored or sent",
+    "Google Shape;302;p35": "Paired by QR code",
+    "Google Shape;298;p35": "Phones need a random code shown at the bedside",
+    "Google Shape;295;p35": "No false numbers",
+    "Google Shape;299;p35": "A weak signal shows a dash and pauses monitoring",
+    "Google Shape;303;p35": "Bias and errors checked",
+    "Google Shape;300;p35": "Built-in logger to test skin tones and lighting"
+   },
+   "notes": "Video never leaves the laptop. A phone connects only with the code shown at the bedside. A weak signal shows a dash, never a guess. And because camera heart rate can be less accurate on darker skin, our logger measures that against a reference device."
+  },
+  {
+   "use": "#9",
+   "text": {
+    "Google Shape;308;p36": "Impact and Next Steps",
+    "Google Shape;313;p36": "Any laptop",
+    "Google Shape;309;p36": "A webcam instead of a costly eye-gaze device",
+    "Google Shape;314;p36": "Speaks Darija",
+    "Google Shape;310;p36": "Phrases written and spoken for Tunisian patients",
+    "Google Shape;315;p36": "Works offline",
+    "Google Shape;316;p36": "No internet needed at the bedside",
+    "Google Shape;318;p36": "Hospital pilot",
+    "Google Shape;311;p36": "Measure speed and accuracy in a neurology unit",
+    "Google Shape;319;p36": "Native voices",
+    "Google Shape;312;p36": "Record every phrase with Darija speakers",
+    "Google Shape;320;p36": "Nurse station",
+    "Google Shape;317;p36": "One dashboard for several beds"
+   },
+   "notes": "It needs only a laptop, speaks Darija and works offline. Next: a hospital pilot, native Darija voices, and a nurse station for several beds."
+  },
+  {
+   "use": "#20",
+   "text": {
+    "Google Shape;526;p47": "Thanks!"
+   },
+   "remove": [
+    "Google Shape;529;p47",
+    "Google Shape;530;p47",
+    "Google Shape;531;p47",
+    "Google Shape;532;p47",
+    "Google Shape;533;p47",
+    "Google Shape;538;p47",
+    "Google Shape;527;p47"
+   ],
+   "notes": "Remember that patient: awake, in pain, without a voice. With 3ayni, their eyes speak and their heart is heard. Thank you, we welcome your questions."
+  }
+ ],
+ "polish": {
+  "text": [
+   {
+    "slide": 1,
+    "box": [
+     0.1,
+     0.8,
+     0.5,
+     0.07
+    ],
+    "paras": [
+     "Tech4Health 2.0 Hackathon  ·  [Team name]"
+    ],
+    "size": 18,
+    "font": "body",
+    "color": "CFD9E0"
+   },
+   {
+    "slide": 10,
+    "box": [
+     0.15,
+     0.38,
+     0.7,
+     0.16
+    ],
+    "paras": [
+     "Questions and discussion are welcome"
+    ],
+    "size": 26,
+    "font": "display",
+    "color": "CFD9E0",
+    "align": "c",
+    "anchor": "m"
+   }
+  ],
+  "move": [
+   {
+    "slide": 7,
+    "shape": "Google Shape;327;p37",
+    "box": [
+     0.53,
+     0.21
+    ]
+   },
+   {
+    "slide": 7,
+    "shape": "Google Shape;328;p37",
+    "box": [
+     0.53,
+     0.32
+    ]
+   },
+   {
+    "slide": 7,
+    "shape": "Google Shape;326;p37",
+    "box": [
+     0.53,
+     0.45
+    ]
+   },
+   {
+    "slide": 7,
+    "shape": "Google Shape;325;p37",
+    "box": [
+     0.53,
+     0.56
+    ]
+   },
+   {
+    "slide": 7,
+    "shape": "Google Shape;329;p37",
+    "box": [
+     0.53,
+     0.69
+    ]
+   },
+   {
+    "slide": 7,
+    "shape": "Google Shape;330;p37",
+    "box": [
+     0.53,
+     0.8
+    ]
+   }
+  ],
+  "title_lines": [
+   {
+    "slide": 10,
+    "shape": "Google Shape;526;p47",
+    "lines": [
+     "Thanks!"
+    ],
+    "size": 64,
+    "box": [
+     0.2,
+     0.12,
+     0.6,
+     0.22
+    ]
+   }
+  ]
+ }
+}

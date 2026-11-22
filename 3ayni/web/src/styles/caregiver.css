@@ -1,0 +1,354 @@
+@import './base.css';
+
+/* The phone follows the system theme; the bedside screen is always dark. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-raised: #f0f2f5;
+    --line: #e1e5ea;
+    --line-strong: #cdd3db;
+    --text: #141a21;
+    --text-muted: #5d6773;
+    --text-faint: #98a1ac;
+    --accent: #23867d;
+    --accent-soft: rgb(35 134 125 / 0.1);
+    --attention: #b8740f;
+    --attention-soft: rgb(184 116 15 / 0.1);
+    --urgent: #cf3a32;
+    --urgent-soft: rgb(207 58 50 / 0.09);
+    --ok: #2f8f4e;
+    color-scheme: light;
+  }
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.page {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 560px;
+  margin: 0 auto;
+  padding: max(var(--space-4), env(safe-area-inset-top)) var(--space-4) var(--space-6);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+}
+
+.head-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: 18px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.card,
+.alert-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.card-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ---------- Alert ---------- */
+
+.alert-card {
+  position: sticky;
+  top: var(--space-2);
+  z-index: 5;
+  border-width: 2px;
+}
+
+.alert-card[data-level='urgent'] {
+  border-color: var(--urgent);
+  background: color-mix(in srgb, var(--urgent) 9%, var(--surface));
+}
+
+.alert-card[data-level='attention'] {
+  border-color: var(--attention);
+  background: color-mix(in srgb, var(--attention) 9%, var(--surface));
+}
+
+.alert-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.alert-level {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.alert-card[data-level='urgent'] .alert-level {
+  color: var(--urgent);
+}
+
+.alert-card[data-level='attention'] .alert-level {
+  color: var(--attention);
+}
+
+.alert-reason {
+  margin: var(--space-2) 0 var(--space-4);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.btn-block {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+}
+
+/* ---------- Message ---------- */
+
+.message-ar {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.message-en {
+  margin: var(--space-1) 0 0;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.message-card[data-urgency='urgent'] {
+  border-color: var(--urgent);
+}
+
+.message-card[data-urgency='attention'] {
+  border-color: var(--attention);
+}
+
+/* ---------- Vitals ---------- */
+
+.vitals-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-4);
+  align-items: end;
+}
+
+.big-number {
+  font-size: 46px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.mid-number {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.big-number small,
+.mid-number small {
+  margin-left: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+.vitals-grid .muted {
+  margin-top: var(--space-1);
+  font-size: 13px;
+}
+
+.trend {
+  display: block;
+  width: 100%;
+  height: 72px;
+  margin: var(--space-4) 0 var(--space-3);
+}
+
+.vitals-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.state-chip {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+}
+
+.state-chip[data-state='normal'] {
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  color: var(--ok);
+}
+
+.state-chip[data-state='elevated'] {
+  background: var(--urgent-soft);
+  color: var(--urgent);
+}
+
+.state-chip[data-state='paused'] {
+  background: var(--attention-soft);
+  color: var(--attention);
+}
+
+#sim-tag {
+  color: var(--attention);
+  border-color: var(--attention);
+}
+
+/* ---------- Questions ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.chip {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.chip:active {
+  background: var(--accent-soft);
+}
+
+.ask {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+}
+
+.ask input {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+/* ---------- History ---------- */
+
+.history {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history li {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.history li:first-child {
+  border-top: 0;
+}
+
+.history time {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding-top: 2px;
+}
+
+.history [data-kind='alert'] {
+  color: var(--urgent);
+}
+
+.history [data-kind='alert'][data-level='attention'] {
+  color: var(--attention);
+}
+
+.history [data-kind='question'],
+.history [data-kind='ack'] {
+  color: var(--text-muted);
+}
+
+.history .empty {
+  display: block;
+  color: var(--text-muted);
+}
+
+.footnote {
+  margin: var(--space-2) 0 0;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---------- Gates ---------- */
+
+.sound-gate {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: var(--space-4) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  display: grid;
+}
+
+.sound-gate[hidden],
+.pair-missing[hidden] {
+  display: none;
+}
+
+.sound-gate .btn {
+  justify-content: center;
+  min-height: 48px;
+}
+
+.pair-missing {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  padding: var(--space-6);
+  background: var(--bg);
+  text-align: center;
+}
+
+.pair-missing h1 {
+  margin: 0 0 var(--space-2);
+  font-size: 22px;
+}

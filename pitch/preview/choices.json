@@ -1,0 +1,26 @@
+{
+ "A": {
+  "template": "bento-design-apple-keynote-inspired-background",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview\\bento-design-apple-keynote-inspired-background.pptx"
+ },
+ "B": {
+  "template": "black-brown-and-white-gradient-modern-business-p",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview\\black-brown-and-white-gradient-modern-business-p.pptx"
+ },
+ "C": {
+  "template": "blue-and-black-modern-brand-marketing",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview\\blue-and-black-modern-brand-marketing.pptx"
+ },
+ "D": {
+  "template": "ai-tool-pitch-deck",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview\\ai-tool-pitch-deck.pptx"
+ }
+}

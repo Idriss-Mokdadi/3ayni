@@ -1,0 +1,173 @@
+/* Deck chrome shared by both presentations: stage, progress, notes, timer. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--letterbox, #000);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 900px;
+  overflow: hidden;
+  transform-origin: center;
+  background: var(--stage-bg, #0b1220);
+  cursor: default;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.slide.is-active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Hide everything until the engine has positioned the stage. */
+body:not(.is-ready) .stage {
+  opacity: 0;
+}
+
+.deck-progress {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: var(--progress, 0%);
+  background: var(--accent, #4fb3a9);
+  box-shadow: 0 0 12px var(--accent, #4fb3a9);
+  transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 50;
+}
+
+.deck-counter {
+  position: fixed;
+  right: 18px;
+  bottom: 12px;
+  font: 500 13px/1 var(--mono, ui-monospace, monospace);
+  color: var(--chrome-text, rgba(255, 255, 255, 0.45));
+  letter-spacing: 0.08em;
+  z-index: 50;
+}
+
+.deck-timer {
+  position: fixed;
+  right: 18px;
+  top: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: 500 18px/1 var(--mono, ui-monospace, monospace);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  transition: opacity 200ms;
+  z-index: 50;
+}
+
+.deck-timer.is-visible {
+  opacity: 1;
+}
+
+.deck-timer.is-late {
+  color: #ff8a80;
+  border-color: #ff8a80;
+}
+
+.deck-notes {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  width: min(900px, 92vw);
+  transform: translate(-50%, 140%);
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: rgba(8, 11, 18, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e6e9ee;
+  font: 400 16px/1.5 var(--sans, system-ui, sans-serif);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 60;
+}
+
+.deck-notes.is-visible {
+  transform: translate(-50%, 0);
+}
+
+.deck-notes strong {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent, #4fb3a9);
+  margin-bottom: 6px;
+}
+
+.deck-notes p {
+  margin: 0 0 8px;
+}
+
+.deck-notes small {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.deck-toast {
+  position: fixed;
+  left: 50%;
+  top: 16px;
+  transform: translate(-50%, -150%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font: 500 14px/1 var(--sans, system-ui, sans-serif);
+  transition: transform 220ms;
+  z-index: 60;
+}
+
+.deck-toast.is-visible {
+  transform: translate(-50%, 0);
+}
+
+/* Reveal steps */
+.step {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step.on {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

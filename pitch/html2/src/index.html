@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>3ayni, through his eyes</title>
+<link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<main class="stage" aria-label="3ayni presentation">
+
+  <!-- What his eye sees: the ward at night (behind every slide after the cover) -->
+  <div class="room" id="room" aria-hidden="true"><img src="media/room-night.jpg" alt=""></div>
+  <div class="room-dim" id="room-dim" aria-hidden="true"></div>
+  <div class="alarm-light" aria-hidden="true"></div>
+
+  <!-- Karim, the night nurse: one person who walks through the whole story -->
+  <div class="guide" id="guide" aria-hidden="true"><div class="guide-body"><img src="media/guide.webp" alt=""></div></div>
+
+  <!-- 1 · Outside: a real eye, moving -->
+  <section class="slide" id="cover" data-auto="12" data-guide="off"
+    data-notes="Look at this eye. It moves, it follows, it understands. For thousands of patients in Tunisia, after a stroke, with ALS or on a breathing tube, the eyes are the only thing they can still move. We built 3ayni, which means my eyes, to turn that movement into a voice. Now, let's go inside his eye.">
+    <video class="full drift" id="cover-video" src="media/gaze.webm" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="scrim-left"></div>
+    <div class="cover-text">
+      <h1 class="lines" aria-label="3ayni">
+        <span class="line"><span data-line style="--i:0">3ayni <span lang="ar" class="ar-word">عيني</span></span></span>
+      </h1>
+      <p class="rise" style="--i:2">A voice and a pulse monitor for patients who cannot speak or move.</p>
+      <p class="small rise" style="--i:3">Tech4Health 2.0 Hackathon, [Team name]</p>
+    </div>
+  </section>
+
+  <!-- 2 · Inside: silence -->
+  <section class="slide inside" id="silence" data-auto="12" data-guide="off" data-look="0" data-dim="0.35"
+    data-notes="We are inside Am Hédi's eye now. This is the ward at night, the only view he has. He hears everything. He understands everything. And he cannot say a single word.">
+    <div class="statement">
+      <p class="say step">Am Hédi hears everything.</p>
+      <p class="say step">He understands everything.</p>
+      <p class="say step strong">He cannot say a single word.</p>
+    </div>
+  </section>
+
+  <!-- 3 · Karim comes to the bed and asks for a blink -->
+  <section class="slide inside" id="ask" data-auto="16" data-guide="near" data-look="-60" data-dim="0.15"
+    data-sub-ar="عم الهادي، تسمع فيّ؟ كان إيه، غمّض مرّة." data-sub-en="Am Hédi, can you hear me? If yes, blink once."
+    data-notes="This is Karim, his night nurse. Every night he leans over the bed and asks: Am Hédi, can you hear me? If yes, blink once. (Click.) One blink. Today, that is all he has.">
+    <p class="ask-caption step">One blink. Today, that is all he has.</p>
+  </section>
+
+  <!-- 4 · The problem -->
+  <section class="slide inside" id="problem" data-auto="18" data-guide="left" data-look="40" data-dim="0.55"
+    data-notes="After a stroke, with ALS, or on a breathing tube, many patients stay fully aware but cannot speak or move. Families guess from blinks. Eye-gaze devices cost thousands of dinars. And a patient who cannot speak cannot say that he is in distress.">
+    <div class="col-right">
+      <h2 class="lines">
+        <span class="line"><span data-line style="--i:0">Awake, aware,</span></span>
+        <span class="line"><span data-line style="--i:1">and unheard</span></span>
+      </h2>
+      <ul class="facts">
+        <li class="rise" style="--i:3">After a stroke, with ALS or on a breathing tube, patients stay awake but cannot speak or move.</li>
+        <li class="rise" style="--i:4">Their families guess from blinks.</li>
+        <li class="rise" style="--i:5">Eye-gaze devices cost thousands of dinars.</li>
+        <li class="rise red" style="--i:6">Their distress goes unheard.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5 · Try it: the board in front of his eyes -->
+  <section class="slide inside" id="try" data-auto="14" data-guide="edge-right" data-look="0" data-dim="0.6"
+    data-sub-ar="جاي، ما تخافش." data-sub-en="I'm coming. Don't be afraid."
+    data-notes="Karim put a laptop in front of him. Now you are Am Hédi: your mouse is his gaze. Hold it on a tile, the ring fills, and the laptop says it for him in Darija. Six large tiles, chosen with the eyes, spoken aloud.">
+    <h2 class="try-title lines center">
+      <span class="line"><span data-line style="--i:0">Your mouse is his gaze. Hold it on a tile.</span></span>
+    </h2>
+    <div class="app-board interactive" id="board" data-ui aria-label="3ayni communication board"></div>
+  </section>
+
+  <!-- 6 · The solution -->
+  <section class="slide inside" id="solution" data-auto="18" data-guide="off" data-look="-30" data-dim="0.62"
+    data-notes="3ayni turns any laptop into two things at once. He looks at a tile, and the laptop speaks it in Darija. The camera that reads his eyes also reads his heart rate from his face. And pain with a racing heart reaches the nurse's phone as an urgent alert.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">One laptop gives him a voice and a pulse</span></span>
+    </h2>
+    <figure class="screen shutter" data-ui><img src="media/bedside.png" alt="The 3ayni bedside board after the patient said I am in pain, heart rate 106"></figure>
+    <div class="claims">
+      <p class="rise" style="--i:3"><strong>He looks.</strong> The laptop speaks his phrase in Darija.</p>
+      <p class="rise" style="--i:4"><strong>The same camera</strong> reads his heart rate from his face.</p>
+      <p class="rise" style="--i:5"><strong>Pain with a racing heart</strong> reaches Karim's phone.</p>
+    </div>
+  </section>
+
+  <!-- 7 · How it works -->
+  <section class="slide inside" id="how" data-auto="18" data-guide="off" data-look="30" data-dim="0.66"
+    data-notes="Everything runs in the browser on the bedside laptop. A face model tracks the eyes, and an eight-second calibration learns this patient's gaze. Each heartbeat slightly changes the colour of the skin, which gives the heart rate. Clear rules combine words and body, and only the result reaches the phone.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">From a glance to the nurse's phone</span></span>
+    </h2>
+    <ol class="chain">
+      <li class="rise" style="--i:2"><strong>Camera</strong><span>Films his face, on the laptop only.</span></li>
+      <li class="rise" style="--i:3"><strong>Face model</strong><span>Tracks his eyes and 478 points.</span></li>
+      <li class="rise" style="--i:4"><strong>Six tiles</strong><span>His gaze selects one.</span></li>
+      <li class="rise" style="--i:5"><strong>Pulse</strong><span>Skin colour reveals each heartbeat.</span></li>
+      <li class="rise" style="--i:6"><strong>Rules</strong><span>Combine his words and his heart.</span></li>
+      <li class="rise" style="--i:7"><strong>Phone</strong><span>Karim gets the message and the alert.</span></li>
+    </ol>
+    <canvas class="trace" id="how-trace" width="1000" height="120" aria-hidden="true"></canvas>
+  </section>
+
+  <!-- 8 · Live demo, then the alert -->
+  <section class="slide inside" id="demo" data-auto="22" data-guide="off" data-look="0" data-dim="0.66"
+    data-sub-ar="جاي، ما تخافش." data-sub-en="I'm coming. Don't be afraid."
+    data-notes="Live demo, about ninety seconds. A jury member follows five dots to calibrate, then says I want to drink with their eyes, and the laptop speaks it. Their heart rate appears on screen and on the phone. We start the stress scenario, answer pain, and the alarm reaches Karim. He runs in. One tap on his phone, and the patient sees help is coming.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">Live, with one of you</span></span>
+    </h2>
+    <figure class="demo-laptop" data-ui><img src="media/bedside.png" alt="Bedside board"></figure>
+    <figure class="demo-phone" data-ui><img src="media/caregiver.png" alt="Nurse's phone with the alert"></figure>
+    <p class="demo-hr"><span id="demo-hr">72</span> bpm <span class="demo-state" id="demo-state">within his usual range</span></p>
+    <div class="urgent" id="urgent">
+      <p class="urgent-label">Urgent</p>
+      <p class="urgent-text">“I am in pain.” Heart rate 47&nbsp;% above his baseline.</p>
+    </div>
+  </section>
+
+  <!-- 9 · Purposeful AI -->
+  <section class="slide inside" id="ai" data-auto="18" data-guide="off" data-look="-20" data-dim="0.7"
+    data-notes="We used AI only where rules cannot do the job: tracking the eyes and learning each patient's gaze. The pulse uses a published signal-processing method with no training data. Suggestions come from a small model that runs offline. And alerts are simple rules a nurse can trust.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">AI where rules can't. Rules where trust matters.</span></span>
+    </h2>
+    <table class="ai-table rise" style="--i:3">
+      <thead><tr><th scope="col">Part</th><th scope="col">How</th><th scope="col">Why</th></tr></thead>
+      <tbody>
+        <tr><td>Eye and face tracking</td><td>Neural network (MediaPipe)</td><td>Impossible with rules</td></tr>
+        <tr><td>Gaze to screen</td><td>Personal calibration in 8 seconds</td><td>Every face is different</td></tr>
+        <tr><td>Pulse from video</td><td>Published signal method (POS)</td><td>Explainable, no training data</td></tr>
+        <tr><td>Phrase suggestions</td><td>Small model on the laptop</td><td>Offline, learns the patient</td></tr>
+        <tr><td>Alerts</td><td>Plain rules with thresholds</td><td>Predictable for nurses</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 10 · What we measured -->
+  <section class="slide inside" id="proof" data-auto="18" data-guide="off" data-look="20" data-dim="0.7"
+    data-notes="Suggestions cut the effort of a message by 37 percent: 1.89 selections instead of 3, measured on 2,000 simulated conversations the model never saw. On test signals the heart rate stays within 3 beats per minute, even under flickering light. All 63 automated tests pass. Next, real accuracy against a pulse oximeter.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">What we measured</span></span>
+    </h2>
+    <div class="figures">
+      <div class="rise" style="--i:2"><b data-count="37" data-suffix=" %">0 %</b><p>fewer selections per message, 1.89 instead of 3</p></div>
+      <div class="rise" style="--i:3"><b data-count="3" data-prefix="± " data-suffix=" bpm">± 0 bpm</b><p>heart rate on test signals from 52 to 130 bpm</p></div>
+      <div class="rise" style="--i:4"><b data-count="63" data-suffix=" of 63">0 of 63</b><p>automated tests passing</p></div>
+    </div>
+    <p class="source rise" style="--i:6">Simulated conversations and synthetic signals. The next measure is a hospital pilot.</p>
+  </section>
+
+  <!-- 11 · Responsible AI -->
+  <section class="slide inside" id="trust" data-auto="18" data-guide="right" data-look="-40" data-dim="0.55"
+    data-notes="Video never leaves the laptop. A phone connects only with the code shown at the bedside. A weak signal shows a dash, never a guess. And because camera heart rate can be less accurate on darker skin, our logger measures that against a reference device.">
+    <div class="col-left">
+      <h2 class="lines">
+        <span class="line"><span data-line style="--i:0">Private by design,</span></span>
+        <span class="line"><span data-line style="--i:1">honest by default</span></span>
+      </h2>
+      <ul class="facts">
+        <li class="rise" style="--i:3"><strong>The video stays on the laptop.</strong> It is never stored or sent.</li>
+        <li class="rise" style="--i:4"><strong>Phones pair with a code</strong> shown at the bedside.</li>
+        <li class="rise" style="--i:5"><strong>A weak signal shows a dash,</strong> never a guess.</li>
+        <li class="rise" style="--i:6"><strong>Skin tone and light are tested</strong> against a reference device.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 12 · Next steps -->
+  <section class="slide inside" id="next" data-auto="14" data-guide="left" data-look="40" data-dim="0.55"
+    data-notes="It needs only a laptop, speaks Darija and works offline. Next: a pilot in a Tunisian hospital, native Darija voices, and a nurse station for several beds.">
+    <div class="col-right">
+      <h2 class="lines">
+        <span class="line"><span data-line style="--i:0">Small enough</span></span>
+        <span class="line"><span data-line style="--i:1">for every bed</span></span>
+      </h2>
+      <div class="two-lists">
+        <div class="rise" style="--i:3"><h3>Today</h3><p>A webcam, not a costly eye-gaze device.</p><p>Written and spoken in Darija.</p><p>Works offline at the bedside.</p></div>
+        <div class="rise" style="--i:4"><h3>Next</h3><p>A pilot in a Tunisian hospital.</p><p>Darija voices by native speakers.</p><p>One nurse station for several beds.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 · Closing: the eye closes -->
+  <section class="slide inside" id="close" data-auto="16" data-guide="center" data-look="-20" data-dim="0.4"
+    data-sub-ar="يعيشك يا كريم." data-sub-en="Thank you, Karim."
+    data-notes="Remember Am Hédi: awake, in pain, without a voice. With 3ayni, his eyes speak and his heart is heard. (Click: the eye closes.) Thank you, we welcome your questions.">
+    <div class="col-left close-text">
+      <h2 class="lines big">
+        <span class="line"><span data-line style="--i:0">His eyes speak.</span></span>
+        <span class="line"><span data-line style="--i:1">His heart is heard.</span></span>
+      </h2>
+    </div>
+    <div class="final step">
+      <p class="questions">Questions and discussion are welcome.</p>
+      <p class="credits">Nurse photograph: Freepik, via a Slidesgo template. Hospital room: Tomasz Sienicki, public domain. Eye footage: InkassoSchroeder, CC BY-SA 4.0, Wikimedia Commons.</p>
+    </div>
+  </section>
+
+  <div class="subtitle" id="subtitle" aria-live="polite">
+    <p class="sub-ar" lang="ar" dir="rtl" id="sub-ar"></p>
+    <p class="sub-en" id="sub-en"></p>
+  </div>
+</main>
+<script src="shared/engine.js"></script>
+<script src="eye.js"></script>
+<script src="deck.js"></script>
+</body>
+</html>

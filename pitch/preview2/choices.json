@@ -1,0 +1,32 @@
+{
+ "A": {
+  "template": "azure-and-white-modern-cyber-security",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview2\\azure-and-white-modern-cyber-security.pptx"
+ },
+ "B": {
+  "template": "futuristic-engineering-center-modern",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview2\\futuristic-engineering-center-modern.pptx"
+ },
+ "C": {
+  "template": "green-and-white-modern-gradient-business-pitch-d",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview2\\green-and-white-modern-gradient-business-pitch-d.pptx"
+ },
+ "D": {
+  "template": "ies-pes-enet-com-sbjc-team",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview2\\ies-pes-enet-com-sbjc-team.pptx"
+ },
+ "E": {
+  "template": "blue-and-black-modern-brand-marketing",
+  "fonts": null,
+  "variant": "as designed",
+  "pptx": "E:\\IEEE\\Tech4Health 2.0\\pitch\\preview2\\blue-and-black-modern-brand-marketing.pptx"
+ }
+}
