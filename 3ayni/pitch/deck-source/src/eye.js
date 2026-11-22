@@ -110,7 +110,8 @@ window.Eye = (function () {
     const a = top.animate([{ transform: `translateY(${CLOSE_TOP * from}px)` }, { transform: `translateY(${CLOSE_TOP * to}px)` }], opts);
     bottom.animate([{ transform: `translateY(${CLOSE_BOTTOM * from}px)` }, { transform: `translateY(${CLOSE_BOTTOM * to}px)` }], opts);
     tint.animate([{ opacity: 0.94 * from }, { opacity: 0.94 * to }], opts);
-    return a.finished.then(() => {
+    // A cancelled animation rejects `finished`; the lids still end where asked.
+    return a.finished.catch(() => {}).then(() => {
       setLids(to);
       top.getAnimations().forEach((x) => x.cancel());
       bottom.getAnimations().forEach((x) => x.cancel());
@@ -122,24 +123,36 @@ window.Eye = (function () {
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  async function blink({ hold = 60, close = 90, open = 180 } = {}) {
-    if (!shown || busy || closed) return;
-    busy = true;
-    if (reduced()) {
-      busy = false;
-      return;
-    }
-    await animateLids(0, 1, close, 'cubic-bezier(0.55, 0.06, 0.68, 0.19)');
-    await wait(hold);
-    await animateLids(1, 0, open, 'cubic-bezier(0.22, 1, 0.36, 1)');
-    busy = false;
+  // Every lid movement runs one after the other. Two overlapping animations
+  // (a blink starting while the eye is still opening) used to cancel each
+  // other and leave the eye shut.
+  let chain = Promise.resolve();
+  let pending = 0;
+  function enqueue(fn) {
+    pending++;
+    const run = chain.then(fn).finally(() => pending--);
+    chain = run.catch(() => {});
+    return run;
+  }
+
+  /** A deliberate blink: waits for any lid movement in progress, then blinks. */
+  function blink({ hold = 60, close = 90, open = 180 } = {}) {
+    return enqueue(async () => {
+      if (!shown || closed || reduced()) return;
+      await animateLids(0, 1, close, 'cubic-bezier(0.55, 0.06, 0.68, 0.19)');
+      await wait(hold);
+      await animateLids(1, 0, open, 'cubic-bezier(0.22, 1, 0.36, 1)');
+    });
   }
 
   function schedule() {
     clearTimeout(timer);
     timer = setTimeout(async () => {
-      await blink();
-      if (Math.random() < 0.15) await blink(); // occasional double blink
+      // Spontaneous blinks give way to anything already moving the lids.
+      if (pending === 0 && !busy) {
+        await blink();
+        if (Math.random() < 0.15) await blink(); // occasional double blink
+      }
       schedule();
     }, 3000 + Math.random() * 4000);
   }
@@ -148,23 +161,25 @@ window.Eye = (function () {
     build,
     blink,
     /** Close, run `during` while the eye is shut, then open. Used for slide changes. */
-    async through(during, { hold = 160, open = 240 } = {}) {
-      busy = true;
-      if (!closed) await animateLids(0, 1, 100, 'cubic-bezier(0.55, 0.06, 0.68, 0.19)');
-      during();
-      await wait(hold);
-      await animateLids(1, 0, open, 'cubic-bezier(0.22, 1, 0.36, 1)');
-      busy = false;
+    through(during, { hold = 160, open = 240 } = {}) {
+      return enqueue(async () => {
+        if (!closed) await animateLids(0, 1, 100, 'cubic-bezier(0.55, 0.06, 0.68, 0.19)');
+        during();
+        await wait(hold);
+        await animateLids(1, 0, open, 'cubic-bezier(0.22, 1, 0.36, 1)');
+      });
     },
-    async closeSlowly(ms = 2200) {
-      busy = true;
+    closeSlowly(ms = 2200) {
+      busy = true; // stays shut: no more spontaneous blinks
       clearTimeout(timer);
-      await animateLids(0, 1, ms, 'cubic-bezier(0.65, 0, 0.35, 1)');
+      return enqueue(() => animateLids(0, 1, ms, 'cubic-bezier(0.65, 0, 0.35, 1)'));
     },
-    async openSlowly(ms = 1400) {
-      await animateLids(1, 0, ms, 'cubic-bezier(0.22, 1, 0.36, 1)');
-      busy = false;
-      schedule();
+    openSlowly(ms = 1400) {
+      return enqueue(async () => {
+        await animateLids(1, 0, ms, 'cubic-bezier(0.22, 1, 0.36, 1)');
+        busy = false;
+        schedule();
+      });
     },
     show(on) {
       shown = on;

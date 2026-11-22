@@ -236,23 +236,27 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
   - rushes in when the alarm turns the ward red.
 - **His lines** are in Darija, with English subtitles.
 
-**The 13 slides**
+**The 17 slides**
 
 | # | Slide | What happens |
 |---|---|---|
-| 1 | Cover | Real eye video. The next click dives into the pupil. |
+| 1 | Cover | Real eye video, team Eddes Eddes A777 (Mohamed Idriss Mokdadi and Ahmed Ammar). The next click dives into the pupil. |
 | 2 | Silence | He hears everything but cannot answer. |
 | 3 | The question | Karim: "عم الهادي، تسمع فيّ؟ كان إيه، غمّض مرّة." Your click makes the eye blink once, slowly: his "yes". |
 | 4 | Problem | Today's situation and its cost |
-| 5 | Try it | The real board. The mouse is his gaze: hover to fill the ring, and the phrase is spoken. "Pain" or "Call the nurse" brings Karim's answer. |
-| 6 | Solution | Communicate, monitor, alert |
-| 7 | How it works | The six-step chain with a live red ECG trace |
-| 8 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
-| 9 | AI where it matters | The AI versus rules table |
-| 10 | Proof | 37 %, ± 3 bpm, 67 of 67, counted up on screen |
-| 11 | Trust | Privacy and responsible AI |
-| 12 | Next | Pilot, recorded voices, nurse station view |
-| 13 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
+| 5 | Today: blink codes | Karim guesses: water? the light? turn over? Each click, the eye answers "no" with two blinks. He gives up; "He wanted to say: I am in pain. Nobody asked." |
+| 6 | Today: letter boards | A letter board in front of the eye; rows then letters are scanned and the eye blinks to choose. "PAIN" takes 40 s of his time, played 6 times faster. |
+| 7 | Today: call button and monitor | The audience tries to press the call button: nothing happens. The monitor races at 104 bpm but cannot say why. |
+| 8 | No solution does all three | Table: blink codes, letter boards, eye-gaze tablets, phone eye control, monitor and call button, against 3ayni |
+| 9 | Try it | The real board. The mouse is his gaze: hover to fill the ring, and the phrase is spoken. "Pain" or "Call the nurse" brings Karim's answer. |
+| 10 | Solution | Communicate, monitor, alert |
+| 11 | How it works | The six-step chain with a live red ECG trace |
+| 12 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
+| 13 | AI where it matters | The AI versus rules table |
+| 14 | Proof | 37 %, ± 3 bpm, 67 of 67, counted up on screen |
+| 15 | Trust | Privacy and responsible AI |
+| 16 | Next | Pilot, recorded voices, nurse station view |
+| 17 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
 
 **Controls:** → or Space next, ← back, **N** speaker notes, **T** timer, **A** auto-play, **F** fullscreen. Clicks during a blink are ignored, so slides never stack up.
 
@@ -274,7 +278,7 @@ cd "E:\IEEE\Tech4Health 2.0\pitch\html2"
 node pack.mjs
 ```
 
-**Verified.** In headless Chrome, all 13 slides render with no page errors, including:
+**Verified.** In headless Chrome, all 17 slides render with no page errors, including:
 
 - the dive into the eye;
 - half-closed and closed blinks;
@@ -322,7 +326,6 @@ Breathing rate is experimental. Present it as such, or leave it out.
 
 ## 11. Checklist before the pitch
 
-- [ ] Replace **[Team name]** on the cover in `pitch/html2/src/index.html`, then run `node pack.mjs`.
 - [ ] Open the final deck on the presentation laptop in Chrome, press **F**, and rehearse the full 4 minutes with **T**.
 - [ ] Test the app's camera on that laptop under the venue's light. Bring a desk lamp.
 - [ ] Pair the phone over a hotspot, not the venue Wi-Fi, and turn **Fast demo timings** on.

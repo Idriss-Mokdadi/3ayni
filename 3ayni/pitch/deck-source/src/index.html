@@ -28,7 +28,7 @@
         <span class="line"><span data-line style="--i:0">3ayni <span lang="ar" class="ar-word">عيني</span></span></span>
       </h1>
       <p class="rise" style="--i:2">A voice and a pulse monitor for patients who cannot speak or move.</p>
-      <p class="small rise" style="--i:3">Tech4Health 2.0 Hackathon, [Team name]</p>
+      <p class="small rise" style="--i:3">Tech4Health 2.0 Hackathon, team Eddes Eddes A777<br>Mohamed Idriss Mokdadi and Ahmed Ammar</p>
     </div>
   </section>
 
@@ -64,6 +64,80 @@
         <li class="rise red" style="--i:6">Their distress goes unheard.</li>
       </ul>
     </div>
+  </section>
+
+  <!-- Today's options, lived from inside his eye -->
+
+  <!-- Blink codes: Karim has to guess the right question -->
+  <section class="slide inside" id="guess" data-auto="18" data-guide="near" data-look="-50" data-dim="0.15"
+    data-notes="This is what exists today. First, blink codes: one blink yes, two blinks no. Karim has to guess the question. Water? (Click: two blinks, no.) The light? (Click: no.) Turn him over? (Click: no.) Karim gives up and leaves. (Click.) He wanted to say: I am in pain. Nobody asked.">
+    <div class="today">
+      <h2 class="lines">
+        <span class="line"><span data-line style="--i:0">Today: blink codes</span></span>
+      </h2>
+      <p class="rise" style="--i:2">One blink for yes, two for no. Karim has to guess the question.</p>
+    </div>
+    <i class="step marker"></i><i class="step marker"></i><i class="step marker"></i>
+    <div class="wanted step">
+      <p>He wanted to say</p>
+      <p class="wanted-text">“I am in pain.”</p>
+      <p>Nobody asked.</p>
+    </div>
+  </section>
+
+  <!-- Letter boards: one letter at a time -->
+  <section class="slide inside" id="letters" data-auto="16" data-guide="left" data-look="30" data-dim="0.5"
+    data-notes="Second, the letter board. Karim reads the rows one by one; Am Hédi blinks at the right row, then at the right letter. Watch the clock: forty seconds of his time for four letters, and that is when nothing goes wrong. Played here six times faster.">
+    <div class="today today-right">
+      <h2 class="lines">
+        <span class="line"><span data-line style="--i:0">Today: letter boards</span></span>
+      </h2>
+      <p class="rise" style="--i:2">Karim reads each row aloud. Am Hédi blinks at the right row, then at the right letter.</p>
+    </div>
+    <div class="eboard" id="eboard" data-ui aria-label="Letter board"></div>
+    <p class="spelled">Spelled: <b id="spelled"></b></p>
+    <p class="clock"><b id="clock">0:00</b> of his time, played 6 times faster</p>
+  </section>
+
+  <!-- The call button and the monitor -->
+  <section class="slide inside" id="button" data-auto="16" data-guide="off" data-look="-30" data-dim="0.6"
+    data-notes="Third, what every hospital bed has: a call button, and a monitor. Try to press the button. (Click it.) Nothing happens: his hand cannot move. And the monitor sees his heart racing, but it cannot hear why.">
+    <div class="today">
+      <h2 class="lines">
+        <span class="line"><span data-line style="--i:0">Today: a call button</span></span>
+        <span class="line"><span data-line style="--i:1">and a monitor</span></span>
+      </h2>
+      <ul class="facts">
+        <li class="rise" style="--i:3"><strong>The button is in his hand.</strong> His hand cannot press it.</li>
+        <li class="rise" style="--i:4"><strong>The monitor sees his heart racing.</strong> It cannot tell anyone why.</li>
+      </ul>
+    </div>
+    <div class="monitor rise" style="--i:3" data-ui aria-label="Bedside monitor showing 104 beats per minute">
+      <p class="monitor-label">HR</p>
+      <p class="monitor-value">104</p>
+      <canvas id="monitor-trace" width="440" height="110" aria-hidden="true"></canvas>
+    </div>
+    <button class="call-button rise" style="--i:5" id="call-button" type="button" aria-label="Nurse call button"><span>Call</span></button>
+    <p class="call-hint" id="call-hint">Try to press it.</p>
+  </section>
+
+  <!-- What exists, and what is missing -->
+  <section class="slide inside" id="landscape" data-auto="18" data-guide="off" data-look="10" data-dim="0.72"
+    data-notes="Here is everything that exists today. Eye-gaze tablets work well, but they cost thousands of euros and this ward has none. Phone eye control is free, but it needs a recent phone held in front of his face and warns no one. The monitor sees his body, not his words. No single solution lets him speak, notices his distress, and tells the nurse. 3ayni does all three, on a laptop the hospital already has.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">No solution does all three</span></span>
+    </h2>
+    <table class="ai-table compare rise" style="--i:3">
+      <thead><tr><th scope="col">Today</th><th scope="col">He can say what he wants</th><th scope="col">His distress is noticed</th><th scope="col">The nurse is told</th><th scope="col">Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Blink codes</td><td>Yes or no only</td><td>No</td><td>No</td><td>Free</td></tr>
+        <tr><td>Letter boards</td><td>Slowly, with help</td><td>No</td><td>No</td><td>Free</td></tr>
+        <tr><td>Eye-gaze tablets</td><td>Yes</td><td>No</td><td>No</td><td>Thousands of €</td></tr>
+        <tr><td>Phone eye control</td><td>Yes, on a phone</td><td>No</td><td>No</td><td>A recent phone</td></tr>
+        <tr><td>Monitor and call button</td><td>No</td><td>His body only</td><td>If he can press</td><td>Hospital only</td></tr>
+        <tr class="ours"><td>3ayni</td><td>Yes, in Darija</td><td>Body and words</td><td>Yes, on his phone</td><td>A laptop</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- 5 · Try it: the board in front of his eyes -->
@@ -199,6 +273,7 @@
     </div>
     <div class="final step">
       <p class="questions">Questions and discussion are welcome.</p>
+      <p class="team">Team Eddes Eddes A777: Mohamed Idriss Mokdadi and Ahmed Ammar</p>
       <p class="credits">Nurse photograph: Freepik, via a Slidesgo template. Hospital room: Tomasz Sienicki, public domain. Eye footage: InkassoSchroeder, CC BY-SA 4.0, Wikimedia Commons.</p>
     </div>
   </section>

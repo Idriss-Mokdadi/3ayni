@@ -100,6 +100,147 @@
     },
   });
 
+  // ---- Today's options, lived from inside his eye
+
+  const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /** Karim says a line: Darija subtitle with its English translation. */
+  function say(ar, en) {
+    if (!ar) {
+      subtitle.classList.remove('is-on');
+      guide.classList.remove('talking');
+      return;
+    }
+    $('#sub-ar').textContent = ar;
+    $('#sub-en').textContent = en;
+    subtitle.classList.add('is-on');
+    guide.classList.toggle('talking', spot !== 'off');
+  }
+
+  /** Two blinks: "no" in a blink code. Waits for a spontaneous blink to end first. */
+  async function blinkNo() {
+    for (let i = 0; i < 2; i++) {
+      await pause(i === 0 ? 120 : 160);
+      await Eye.blink({ close: 110, hold: 90, open: 200 });
+    }
+  }
+
+  // Blink codes: each click, Am Hédi answers "no" and Karim tries another guess.
+  const GUESSES = [
+    ['تحب تشرب؟', 'Do you want to drink?'],
+    ['نطفيلك الضو؟', 'Shall I turn off the light?'],
+    ['نقلبك على جنبك؟', 'Shall I turn you on your side?'],
+    ['مالا ارتاح، نرجعلك بعد.', 'Then rest. I will come back later.'],
+  ];
+  let guessStep = 0;
+  scene('guess', {
+    enter() {
+      guessStep = 0;
+      setTimeout(() => say(...GUESSES[0]), 900);
+    },
+    async step(s, n) {
+      const forward = n > guessStep;
+      guessStep = n;
+      if (n === 0) return say(...GUESSES[0]);
+      if (n <= 3) {
+        if (forward) {
+          say(null);
+          await blinkNo();
+          await pause(350);
+        }
+        if (guessStep !== n) return; // moved on meanwhile
+        say(...GUESSES[n]);
+        if (n === 3) setTimeout(() => guessStep === 3 && moveGuide('off'), 1800);
+        else moveGuide('near');
+      } else {
+        say(null);
+        moveGuide('off');
+      }
+    },
+    leave() {
+      say(null);
+    },
+  });
+
+  // Letter board: partner-assisted scanning spells "PAIN", row then letter.
+  const ROWS = ['ABCDEF', 'GHIJKL', 'MNOPQR', 'STUVWX', 'YZ.,?!'];
+  const WORD = 'PAIN';
+  const SIM_STEP_S = 1.5; // Karim reads one row or one letter about every 1.5 s
+  const SPEEDUP = 6;
+  const eboard = $('#eboard');
+  eboard.innerHTML = ROWS.map((row) => `<div class="eboard-row">${[...row].map((c) => `<span>${c}</span>`).join('')}</div>`).join('');
+  const rowEls = [...eboard.querySelectorAll('.eboard-row')];
+  let scanRun = 0;
+
+  async function spell() {
+    const run = ++scanRun;
+    let simSeconds = 0;
+    const alive = () => run === scanRun;
+    const tick = async () => {
+      await pause((SIM_STEP_S * 1000) / SPEEDUP);
+      simSeconds += SIM_STEP_S;
+      const m = Math.floor(simSeconds / 60);
+      $('#clock').textContent = `${m}:${String(Math.floor(simSeconds % 60)).padStart(2, '0')}`;
+    };
+    const clear = () => eboard.querySelectorAll('.is-scan, .is-chosen').forEach((el) => el.classList.remove('is-scan', 'is-chosen'));
+    $('#spelled').textContent = '';
+    $('#clock').textContent = '0:00';
+    clear();
+    await pause(1600);
+    for (const letter of WORD) {
+      const r = ROWS.findIndex((row) => row.includes(letter));
+      const c = ROWS[r].indexOf(letter);
+      for (let i = 0; i <= r; i++) {
+        if (!alive()) return;
+        rowEls.forEach((el, k) => el.classList.toggle('is-scan', k === i));
+        await tick();
+      }
+      Eye.blink({ close: 100, hold: 120, open: 200 });
+      await tick();
+      const cells = [...rowEls[r].children];
+      for (let i = 0; i <= c; i++) {
+        if (!alive()) return;
+        cells.forEach((el, k) => el.classList.toggle('is-scan', k === i));
+        await tick();
+      }
+      Eye.blink({ close: 100, hold: 120, open: 200 });
+      cells[c].classList.add('is-chosen');
+      await tick();
+      if (!alive()) return;
+      $('#spelled').textContent += letter;
+      clear();
+    }
+  }
+
+  scene('letters', {
+    enter() {
+      spell();
+    },
+    leave() {
+      scanRun++;
+    },
+  });
+
+  // Call button and monitor: the button does nothing, the monitor races.
+  let monitorTrace = null;
+  const callButton = $('#call-button');
+  const callHint = $('#call-hint');
+  callButton.addEventListener('click', () => {
+    callButton.classList.remove('is-tried');
+    void callButton.offsetWidth; // restart the refusal shake
+    callButton.classList.add('is-tried');
+    callHint.textContent = 'Nothing happens. His hand cannot move.';
+    callHint.classList.add('is-tried');
+  });
+  scene('button', {
+    enter() {
+      monitorTrace ??= ecg($('#monitor-trace'), { color: '#3ccf7a', glow: 'rgba(60,207,122,0.45)', bpm: 104, line: 2.5 });
+      callHint.textContent = 'Try to press it.';
+      callHint.classList.remove('is-tried');
+      if (Deck.autoplay) setTimeout(() => callButton.click(), 6000);
+    },
+  });
+
   // ---- Try it: the product's own board; the mouse is his gaze
   const TILES = [
     { ar: 'نحب نشرب', en: 'I want to drink' },
