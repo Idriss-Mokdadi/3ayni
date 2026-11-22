@@ -132,7 +132,7 @@ Run them yourself: `npm test` and `npm run evaluate:predictor`.
 │     ├─ caregiver/main.js
 │     ├─ shared/              protocol, relay link, icons, sound, storage
 │     └─ styles/
-└─ test/                      63 unit tests (vitest)
+└─ test/                      67 unit tests (vitest)
 ```
 
 ## Limits and next steps

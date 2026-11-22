@@ -9,10 +9,11 @@
 // Every estimate comes with a quality grade. When the signal is weak we report
 // "poor" rather than a made-up number.
 
-import { detrend, dominantFrequency, median, powerSpectrum, resampleUniform, std } from './dsp.js';
+import { bandpass, detrend, dominantFrequency, median, powerSpectrum, resampleUniform, std } from './dsp.js';
 
 const HR_BAND_HZ = [0.7, 3.0]; // 42 to 180 beats per minute
 const RR_BAND_HZ = [0.1, 0.6]; // 6 to 36 breaths per minute
+const STEP_RATIO = 0.06; // frame-to-frame brightness change treated as a camera or lighting jump
 
 /**
  * POS pulse extraction.
@@ -67,8 +68,8 @@ export function gradeSnr(snrDb, { good = 3, fair = 0 } = {}) {
 }
 
 export class VitalsEstimator {
-  constructor({ fs = 30, hrWindowS = 12, minHrWindowS = 6, rrWindowS = 30, minRrWindowS = 15, maxGapMs = 1000 } = {}) {
-    Object.assign(this, { fs, hrWindowS, minHrWindowS, rrWindowS, minRrWindowS, maxGapMs });
+  constructor({ fs = 30, hrWindowS = 12, minHrWindowS = 6, rrWindowS = 30, minRrWindowS = 15, maxGapMs = 1000, spectraAveraged = 4, fairSnrDb = 0 } = {}) {
+    Object.assign(this, { fs, hrWindowS, minHrWindowS, rrWindowS, minRrWindowS, maxGapMs, spectraAveraged, fairSnrDb });
     this.reset();
   }
 
@@ -81,6 +82,7 @@ export class VitalsEstimator {
     this.trackedHr = null;
     this.recentHr = [];
     this.poorStreak = 0;
+    this.spectra = [];
   }
 
   /**
@@ -92,6 +94,14 @@ export class VitalsEstimator {
     if (!rgb) return;
     const last = this.times.at(-1);
     if (last !== undefined && t - last > this.maxGapMs) this.reset(); // the face was lost: start over
+    else if (last !== undefined) {
+      // A sudden brightness jump (the camera adjusting its exposure, a light
+      // switched on) is far larger than any pulse and would spoil the whole
+      // window: start over from the new level.
+      const before = this.red.at(-1) + this.green.at(-1) + this.blue.at(-1);
+      const now = rgb[0] + rgb[1] + rgb[2];
+      if (Math.abs(now - before) > STEP_RATIO * before) this.reset();
+    }
     this.times.push(t);
     this.red.push(rgb[0]);
     this.green.push(rgb[1]);
@@ -134,8 +144,10 @@ export class VitalsEstimator {
     const start = this.#window(this.hrWindowS);
     const times = this.times.slice(start);
     const [r, g, b] = [this.red, this.green, this.blue].map((c) => resampleUniform(times, c.slice(start), this.fs));
-    const pulse = pos(r, g, b, this.fs);
-    const spectrum = powerSpectrum(pulse, this.fs);
+    // Band-pass before the spectrum: without it, slow drift from posture and
+    // lighting leaked into the bottom of the band and won as a false 35-45 bpm.
+    const pulse = bandpass(pos(r, g, b, this.fs), HR_BAND_HZ[0] - 0.05, HR_BAND_HZ[1] + 0.2, this.fs);
+    const spectrum = this.#averagedSpectrum(powerSpectrum(pulse, this.fs));
     let { frequency, snrDb } = dominantFrequency(spectrum, HR_BAND_HZ[0], HR_BAND_HZ[1], 0.15);
 
     // Tracking: a sudden jump to a far-away peak is more often motion or a
@@ -149,7 +161,7 @@ export class VitalsEstimator {
       }
     }
 
-    const quality = gradeSnr(snrDb);
+    const quality = gradeSnr(snrDb, { good: 3, fair: this.fairSnrDb });
     let hr = null;
     if (quality !== 'poor' && Number.isFinite(frequency)) {
       this.recentHr.push(frequency * 60);
@@ -163,6 +175,22 @@ export class VitalsEstimator {
       this.recentHr = [];
     }
     return { hr, hrSnrDb: snrDb, quality, waveform: displayWaveform(pulse, this.fs) };
+  }
+
+  /**
+   * Average of the last few spectra (estimates are 1 s apart, windows overlap).
+   * A real pulse stays at the same frequency, so it adds up, while noise peaks
+   * move around and average out. Each spectrum is normalised to the power in
+   * the heart band, so one loud window does not dominate.
+   */
+  #averagedSpectrum({ freqs, power }) {
+    let total = 0;
+    for (let k = 0; k < freqs.length; k++) if (freqs[k] >= HR_BAND_HZ[0] && freqs[k] <= HR_BAND_HZ[1]) total += power[k];
+    this.spectra.push(total > 0 ? power.map((v) => v / total) : power);
+    if (this.spectra.length > this.spectraAveraged) this.spectra.shift();
+    const averaged = new Float64Array(power.length);
+    for (const s of this.spectra) for (let k = 0; k < s.length; k++) averaged[k] += s[k] / this.spectra.length;
+    return { freqs, power: averaged };
   }
 
   #estimateBreathing() {

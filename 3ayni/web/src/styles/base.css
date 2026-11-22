@@ -167,3 +167,8 @@ button {
     animation-duration: 0ms !important;
   }
 }
+
+/* Last heart-rate reading kept for a few seconds while the signal is weak. */
+.is-held {
+  opacity: 0.45;
+}

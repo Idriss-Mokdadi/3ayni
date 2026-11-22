@@ -1,6 +1,7 @@
 // Top-bar vitals: heart rate, breathing rate, live pulse wave and a plain
 // signal-quality label. A weak signal shows "--", never a guessed number.
 
+const HOLD_MS = 8000;
 const QUALITY_TEXT = { good: 'Good signal', fair: 'Fair signal', poor: 'Weak signal', none: 'No signal' };
 
 export class VitalsDisplay {
@@ -12,6 +13,7 @@ export class VitalsDisplay {
     this.text = document.getElementById('signal-text');
     this.canvas = document.getElementById('pulse-wave');
     this.context = this.canvas.getContext('2d');
+    this.lastReading = null; // { hr, at }
     this.#fitCanvas();
   }
 
@@ -23,7 +25,14 @@ export class VitalsDisplay {
   update(vitals, waveform, { paused = false } = {}) {
     const quality = paused ? 'none' : vitals.quality;
     this.root.dataset.quality = quality;
-    setNumber(this.hr, paused ? null : vitals.hr);
+    // A webcam pulse comes and goes with small movements. The last reading
+    // stays on screen, greyed, for a few seconds rather than blinking to "--".
+    // Alerts never use it: they only see live readings.
+    const now = Date.now();
+    if (Number.isFinite(vitals.hr)) this.lastReading = { hr: vitals.hr, at: now };
+    const held = !Number.isFinite(vitals.hr) && this.lastReading && now - this.lastReading.at < HOLD_MS;
+    setNumber(this.hr, paused ? null : held ? this.lastReading.hr : vitals.hr);
+    this.hr.classList.toggle('is-held', Boolean(held) && !paused);
     setNumber(this.rr, paused ? null : vitals.rr);
     this.dot.dataset.state = quality;
     this.text.textContent = paused ? 'Sharing paused' : QUALITY_TEXT[quality];

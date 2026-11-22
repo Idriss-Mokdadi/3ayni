@@ -67,7 +67,10 @@ export class FaceTracker {
 
   // requestAnimationFrame rather than requestVideoFrameCallback: the latter
   // stops firing in some browsers while the preview <video> is hidden.
-  // `currentTime` tells us whether a new camera frame actually arrived.
+  // A new camera frame is detected with the decoded-frame counter. For a live
+  // stream Chrome advances `currentTime` on every screen refresh (60 Hz) even
+  // when the camera delivers 30 frames per second, and processing the same
+  // image twice made the face points jitter, which drowned the pulse.
   #scheduleNext() {
     if (this.running) requestAnimationFrame(() => this.#process());
   }
@@ -75,8 +78,9 @@ export class FaceTracker {
   #process() {
     if (!this.running) return;
     const video = this.video;
-    if (video.readyState >= 2 && video.currentTime !== this.lastVideoTime) {
-      this.lastVideoTime = video.currentTime;
+    const frameId = currentFrameId(video);
+    if (video.readyState >= 2 && frameId !== this.lastVideoTime) {
+      this.lastVideoTime = frameId;
       const t = performance.now();
       const result = this.landmarker.detectForVideo(video, t);
       const frame = {
@@ -144,6 +148,12 @@ async function lockCameraAdjustments(track) {
   } catch {
     return false;
   }
+}
+
+/** Number of frames decoded so far, or the playback time where that counter is missing. */
+function currentFrameId(video) {
+  const frames = video.getVideoPlaybackQuality?.().totalVideoFrames;
+  return frames > 0 ? frames : video.currentTime;
 }
 
 function toBlendshapeMap(classifications) {

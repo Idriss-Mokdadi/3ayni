@@ -12,7 +12,19 @@ const CHEEK_A = 205;
 const CHEEK_B = 425;
 const NOSE_TIP = 1;
 
-const SAMPLE_WIDTH = 320; // frames are downscaled: enough pixels, far less work
+const ANCHORS = [FACE_LEFT, FACE_RIGHT, FOREHEAD_CENTRE, FOREHEAD_TOP, CHEEK_A, CHEEK_B, NOSE_TIP];
+
+// Frames are read at the camera's own resolution, capped at 640 pixels wide.
+// The pulse changes skin colour by about 0.1 %, less than one grey level, so it
+// only shows after averaging many pixels: at 320 pixels wide a face at 60 cm
+// gave about 340 skin pixels, and their noise hid the pulse.
+const MAX_SAMPLE_WIDTH = 640;
+
+// Face points jitter by a pixel or so from frame to frame. Moving the regions
+// with them adds noise, so the regions follow a smoothed copy of the points,
+// and jump straight to the new place when the head really moves.
+const SMOOTHING = 0.25;
+const JUMP = 0.04; // normalised distance that counts as real head movement
 
 /**
  * Face-aligned regions in pixel coordinates.
@@ -41,8 +53,8 @@ export function buildRegions(landmarks, width, height) {
   const foreheadHeight = Math.hypot(foreheadTop[0] - foreheadCentre[0], foreheadTop[1] - foreheadCentre[1]);
   return [
     { name: 'forehead', polygon: rect(foreheadCentre, faceWidth * 0.34, Math.max(foreheadHeight * 0.7, faceWidth * 0.08)) },
-    { name: 'cheekA', polygon: rect(p(CHEEK_A), faceWidth * 0.14, faceWidth * 0.12) },
-    { name: 'cheekB', polygon: rect(p(CHEEK_B), faceWidth * 0.14, faceWidth * 0.12) },
+    { name: 'cheekA', polygon: rect(p(CHEEK_A), faceWidth * 0.18, faceWidth * 0.15) },
+    { name: 'cheekB', polygon: rect(p(CHEEK_B), faceWidth * 0.18, faceWidth * 0.15) },
   ];
 }
 
@@ -98,6 +110,21 @@ export class SkinSampler {
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d', { willReadFrequently: true });
     this.lastRegions = [];
+    this.anchors = null;
+  }
+
+  /** Smoothed copies of the few face points the regions are built from. */
+  #smoothAnchors(landmarks) {
+    const previous = this.anchors;
+    const moved = previous && ANCHORS.some((i) => Math.hypot(landmarks[i].x - previous[i].x, landmarks[i].y - previous[i].y) > JUMP);
+    const next = {};
+    for (const i of ANCHORS) {
+      const now = landmarks[i];
+      const before = previous && !moved ? previous[i] : now;
+      next[i] = { x: before.x + SMOOTHING * (now.x - before.x), y: before.y + SMOOTHING * (now.y - before.y) };
+    }
+    this.anchors = next;
+    return next;
   }
 
   /**
@@ -106,9 +133,12 @@ export class SkinSampler {
    * @returns {{rgb: [number, number, number], motionY: number} | null}
    */
   sample(video, landmarks) {
-    if (!landmarks || !video.videoWidth) return null;
-    const width = SAMPLE_WIDTH;
-    const height = Math.round((video.videoHeight / video.videoWidth) * SAMPLE_WIDTH);
+    if (!landmarks || !video.videoWidth) {
+      this.anchors = null;
+      return null;
+    }
+    const width = Math.min(video.videoWidth, MAX_SAMPLE_WIDTH);
+    const height = Math.round((video.videoHeight / video.videoWidth) * width);
     if (this.canvas.width !== width || this.canvas.height !== height) {
       this.canvas.width = width;
       this.canvas.height = height;
@@ -116,7 +146,7 @@ export class SkinSampler {
     this.context.drawImage(video, 0, 0, width, height);
     const { data } = this.context.getImageData(0, 0, width, height);
 
-    const regions = buildRegions(landmarks, width, height);
+    const regions = buildRegions(this.#smoothAnchors(landmarks), width, height);
     this.lastRegions = regions.map((region) => ({
       name: region.name,
       polygon: region.polygon.map(([x, y]) => [x / width, y / height]), // normalised, for the debug overlay
@@ -132,6 +162,6 @@ export class SkinSampler {
       count += result.count;
     }
     if (count < 60) return null;
-    return { rgb: [total[0] / count, total[1] / count, total[2] / count], motionY: landmarks[NOSE_TIP].y };
+    return { rgb: [total[0] / count, total[1] / count, total[2] / count], motionY: landmarks[NOSE_TIP].y, pixels: count };
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dominantFrequency, fft, powerSpectrum, resampleUniform, detrend, median } from '../web/src/patient/vitals/dsp.js';
+import { bandpass, dominantFrequency, fft, powerSpectrum, resampleUniform, detrend, median, std } from '../web/src/patient/vitals/dsp.js';
 import { VitalsEstimator, pos } from '../web/src/patient/vitals/rppg.js';
 
 function seededRandom(seed = 1) {
@@ -65,6 +65,16 @@ describe('dsp', () => {
     expect(magnitudes.indexOf(Math.max(...magnitudes.slice(0, n / 2)))).toBe(5);
   });
 
+  it('bandpass keeps the heart band and removes slow drift', () => {
+    const fs = 30;
+    const n = 360;
+    const slow = Array.from({ length: n }, (_, i) => 5 * Math.sin(2 * Math.PI * 0.2 * (i / fs)));
+    const pulse = Array.from({ length: n }, (_, i) => Math.sin(2 * Math.PI * 1.2 * (i / fs)));
+    const keep = (x) => std(Array.from(bandpass(x, 0.65, 3.2, fs)).slice(60, -60));
+    expect(keep(slow)).toBeLessThan(0.15 * std(slow));
+    expect(keep(pulse)).toBeGreaterThan(0.85 * std(pulse));
+  });
+
   it('dominantFrequency is accurate between FFT bins', () => {
     const fs = 30;
     const signal = Array.from({ length: 360 }, (_, i) => Math.sin(2 * Math.PI * 1.23 * (i / fs)));
@@ -116,6 +126,29 @@ describe('VitalsEstimator', () => {
     // 1.5 Hz flicker would read as 90 bpm if we used the green channel alone.
     const result = runEstimator(syntheticSkin({ bpm: 66, lightingHz: 1.5, lightingAmplitude: 0.03 }));
     expect(Math.abs(result.hr - 66)).toBeLessThan(3);
+  });
+
+  it('is not fooled by slow colour drift near the bottom of the band', () => {
+    // Real webcams drift in colour (white balance, posture). Before the
+    // band-pass this drift won the spectrum as a false 35-45 bpm.
+    const frames = syntheticSkin({ bpm: 75, seed: 11 }).map((f) => {
+      const drift = 0.01 * Math.sin(2 * Math.PI * 0.5 * (f.t / 1000));
+      return { ...f, rgb: [f.rgb[0] * (1 + 1.6 * drift), f.rgb[1] * (1 - drift), f.rgb[2] * (1 + drift)] };
+    });
+    const result = runEstimator(frames);
+    expect(result.quality).not.toBe('poor');
+    expect(Math.abs(result.hr - 75)).toBeLessThan(3);
+  });
+
+  it('starts over after a sudden exposure jump instead of mixing two levels', () => {
+    const frames = syntheticSkin({ seconds: 20, bpm: 80, seed: 3 }).map((f) =>
+      f.t < 3000 ? { ...f, rgb: f.rgb.map((v) => v * 0.72) } : f,
+    );
+    const estimator = new VitalsEstimator();
+    frames.forEach((f) => estimator.push(f.t, f.rgb, f.motionY));
+    expect(estimator.bufferedSeconds()).toBeLessThan(17.5);
+    const result = runEstimator(frames);
+    expect(Math.abs(result.hr - 80)).toBeLessThan(3);
   });
 
   it('reports poor quality instead of a number when there is no pulse', () => {

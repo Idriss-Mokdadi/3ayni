@@ -63,6 +63,14 @@ describe('CareMonitor', () => {
     return events;
   };
 
+  it('learns a baseline from fair webcam readings too', () => {
+    // Real webcams rarely reach "good"; with good-only the baseline never formed.
+    const monitor = new CareMonitor(0);
+    feed(monitor, 0, 91, 68, 'fair');
+    expect(monitor.baseline).toBe(68);
+    expect(monitor.state).toBe('normal');
+  });
+
   it('learns a baseline, then flags a sustained rise and clears it', () => {
     const monitor = new CareMonitor(0);
     feed(monitor, 0, 91, 70);

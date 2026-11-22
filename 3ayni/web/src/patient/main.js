@@ -62,6 +62,7 @@ class BedsideApp {
     this.lastGaze = null;
     this.lastVitals = { hr: null, rr: null, quality: 'none' };
     this.lastEstimate = null;
+    this.rawSignal = []; // last 90 s of [time ms, r, g, b, pixels], for offline analysis
     this.lastMessage = null; // { id, at }
     this.fatigued = false;
     this.showCursor = false;
@@ -77,6 +78,7 @@ class BedsideApp {
       'btn-cursor': () => this.toggleCursor(),
       'btn-exposure': () => this.lockExposure(),
       'btn-export': () => this.exportValidation(),
+      'btn-raw': () => this.exportRawSignal(),
     });
 
     this.#renderStaticIcons();
@@ -156,7 +158,12 @@ class BedsideApp {
     const { t, landmarks, blendshapes } = frame;
 
     const skin = this.sampler.sample(frame.video, landmarks);
-    this.estimator.push(Date.now(), skin?.rgb ?? null, skin?.motionY);
+    const now = Date.now();
+    this.estimator.push(now, skin?.rgb ?? null, skin?.motionY);
+    if (skin) {
+      this.rawSignal.push([now, ...skin.rgb.map((v) => Number(v.toFixed(4))), skin.pixels]);
+      while (this.rawSignal.length && this.rawSignal[0][0] < now - 90_000) this.rawSignal.shift();
+    }
 
     const closure = landmarks ? eyeClosure(blendshapes) : 0;
     const features = landmarks && closure < 0.5 ? extractGazeFeatures(landmarks, blendshapes) : null;
@@ -464,6 +471,21 @@ class BedsideApp {
     URL.revokeObjectURL(link.href);
   }
 
+  /** The raw skin-colour trace and camera settings, to study a recording offline. */
+  rawSignalData() {
+    const track = this.tracker?.video.srcObject?.getVideoTracks()[0];
+    return { fps: this.tracker?.fps ?? null, camera: track?.getSettings?.() ?? null, samples: this.rawSignal };
+  }
+
+  exportRawSignal() {
+    const blob = new Blob([JSON.stringify(this.rawSignalData())], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `3ayni-raw-signal-${new Date().toISOString().slice(0, 16).replace(':', '')}.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
   // ------------------------------------------------------------ UI helpers
 
   setBanner(label, text, tone = null) {
@@ -560,4 +582,4 @@ function syntheticWave(now, hr) {
   });
 }
 
-new BedsideApp();
+window.__3ayni = new BedsideApp(); // reachable from the browser console for debugging

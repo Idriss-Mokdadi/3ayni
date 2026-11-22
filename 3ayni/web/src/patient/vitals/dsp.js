@@ -160,3 +160,49 @@ export function median(values) {
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
+
+/**
+ * Second-order Butterworth biquad coefficients (RBJ cookbook, Q = 1/sqrt 2).
+ * @param {'lowpass'|'highpass'} type
+ */
+function biquad(type, cutoffHz, fs) {
+  const w = (2 * Math.PI * cutoffHz) / fs;
+  const alpha = Math.sin(w) / Math.SQRT2;
+  const cos = Math.cos(w);
+  const b = type === 'lowpass' ? [(1 - cos) / 2, 1 - cos, (1 - cos) / 2] : [(1 + cos) / 2, -(1 + cos), (1 + cos) / 2];
+  const a0 = 1 + alpha;
+  return { b: b.map((v) => v / a0), a: [(-2 * cos) / a0, (1 - alpha) / a0] };
+}
+
+function runBiquad({ b, a }, x) {
+  const y = new Float64Array(x.length);
+  let x1 = x[0] ?? 0;
+  let x2 = x1;
+  let y1 = 0;
+  let y2 = 0;
+  for (let i = 0; i < x.length; i++) {
+    const v = b[0] * x[i] + b[1] * x1 + b[2] * x2 - a[0] * y1 - a[1] * y2;
+    x2 = x1;
+    x1 = x[i];
+    y2 = y1;
+    y1 = v;
+    y[i] = v;
+  }
+  return y;
+}
+
+/**
+ * Zero-phase band-pass: Butterworth high-pass then low-pass, run forward and
+ * backward so the pulse shape is not shifted in time. Removes slow drift
+ * (lighting, posture, breathing) and fast sensor noise outside the heart band.
+ */
+export function bandpass(values, lowHz, highHz, fs) {
+  const m = mean(values);
+  let x = Float64Array.from(values, (v) => v - m);
+  const filters = [biquad('highpass', lowHz, fs), biquad('lowpass', highHz, fs)];
+  for (let pass = 0; pass < 2; pass++) {
+    for (const f of filters) x = runBiquad(f, x);
+    x.reverse();
+  }
+  return x;
+}

@@ -3,7 +3,7 @@
 // be predictable and explainable, so every alert carries its reason.
 //
 // Rules
-//   baseline   median heart rate over the first 90 s of good signal
+//   baseline   median heart rate over the first 90 s of usable (good or fair) signal
 //   elevated   HR > baseline +25 % for 45 s  (cleared below +15 % for 30 s)
 //   low        HR < 45 bpm for 30 s -> attention: check the patient
 //   silent     elevated and no selection for 2 min -> ask the patient "are you in pain?"
@@ -99,7 +99,9 @@ export class CareMonitor {
     if (this.state === 'paused') this.#setState(this.baseline ? this.previousState ?? 'normal' : 'calibrating', events);
 
     if (this.baseline === null) {
-      if (quality === 'good') this.baselineSamples.push(hr);
+      // Fair readings count too: a webcam rarely reaches 'good' for long, and
+      // the median of many readings already rejects the occasional wrong one.
+      this.baselineSamples.push(hr);
       if (t - this.startTime >= this.rules.baselineMs && this.baselineSamples.length >= this.rules.baselineMinSamples) {
         this.baseline = median(this.baselineSamples);
         this.#setState('normal', events, `Personal baseline ${Math.round(this.baseline)} bpm`);
