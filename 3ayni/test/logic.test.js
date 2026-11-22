@@ -213,16 +213,25 @@ describe('BoardModel', () => {
     pick('ا');
     expect(board.typed).toBe('ما');
     const firstPage = board.tiles().filter((t) => t.kind === 'key' && t.char.length === 1);
-    expect(firstPage).toHaveLength(12);
+    expect(firstPage).toHaveLength(7); // 7 large letter keys, plus Space
+    expect(board.tiles().some((t) => t.char === 'space')).toBe(true);
     board.select(board.tiles().find((t) => t.kind === 'page' && t.delta === 1));
-    expect(board.tiles().find((t) => t.kind === 'key' && t.char.length === 1).char).toBe('ف');
+    expect(board.tiles().find((t) => t.kind === 'key' && t.char.length === 1).char).toBe('ر');
     board.select(board.tiles().find((t) => t.kind === 'page' && t.delta === -1));
     board.select(board.tiles().find((t) => t.kind === 'page' && t.delta === -1)); // wraps to the last page
-    expect(board.page).toBe(2);
+    expect(board.page).toBe(4);
     pick('delete');
     expect(board.typed).toBe('م');
     const action = board.select(board.tiles().find((t) => t.kind === 'speak'));
     expect(action).toEqual({ kind: 'sayText', text: 'م', alphabet: 'ar' });
+    expect(board.screen.name).toBe('home');
+  });
+
+  it('the Speak key leads home while nothing is written', () => {
+    const board = new BoardModel();
+    board.select({ kind: 'nav', target: 'keyboard' });
+    expect(board.tiles().some((t) => t.kind === 'speak')).toBe(false);
+    board.select(board.tiles().find((t) => t.target === 'home'));
     expect(board.screen.name).toBe('home');
   });
 
@@ -282,11 +291,12 @@ describe('cellMap', () => {
 });
 
 describe('keyboard', () => {
-  it('has pages of 12 letters, most used letters first', () => {
+  it('has pages of at most 7 letters, most used letters first', () => {
     for (const alphabet of Object.keys(ALPHABETS)) {
       const all = keyboardPages(alphabet);
-      expect(all.length).toBeGreaterThanOrEqual(3);
-      for (const page of all) expect(page).toHaveLength(12);
+      expect(all.length).toBe(5);
+      for (const page of all) expect(page.length).toBeLessThanOrEqual(7);
+      expect(all[0]).toHaveLength(7);
       expect(new Set(all.flat()).size).toBe(all.flat().length); // no letter twice
     }
     expect(keyboardPages('ar')[0].slice(0, 3)).toEqual(['ا', 'ل', 'ي']);
@@ -332,6 +342,12 @@ describe('keyboard', () => {
     const result = suggestKeys({ text: 'mar', alphabet: 'latin', rankedPhraseIds: [], lexicon });
     expect(result).toContainEqual({ kind: 'word', word: 'marti' });
     expect(completeWord('ana nheb mar', 'marti')).toBe('ana nheb marti ');
+  });
+
+  it('never offers the same text twice', () => {
+    const result = suggestKeys({ text: 'ي', alphabet: 'ar', rankedPhraseIds: ['thanks', 'pain'] });
+    const texts = result.map((r) => (r.kind === 'word' ? r.word : PHRASES_BY_ID.get(r.phraseId).ar));
+    expect(new Set(texts).size).toBe(texts.length);
   });
 
   it('matches Arabic spelling variants', () => {

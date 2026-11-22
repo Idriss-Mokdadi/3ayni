@@ -29,7 +29,7 @@ This report covers everything built for the challenge:
 | Function | What the patient or caregiver experiences |
 |---|---|
 | **Communicate** | The patient looks at one of six phrases the nurse chose for the home screen. A ring fills (dwell, 1.4 s) and the phrase is spoken aloud in Darija. Closing the eyes cancels any choice. |
-| **Write** | A gaze keyboard: 12 letters per page, most used first; previous and next pages; two suggestions based on the letters typed and the heart rate. |
+| **Write** | A gaze keyboard with large keys: 7 letters and Space per page, most used first; previous and next pages; two suggestions based on the letters typed and the heart rate. |
 | **Answer** | The nurse's questions fill the screen with just Yes and No. |
 | **Rest** | With no choice for a while, the screen sleeps to one dot, staying awake longer when the heart rate is high; looking at the dot wakes it. |
 | **Monitor** | Heart rate (and an experimental breathing rate) is estimated from the face video. Every value carries a signal-quality grade. |
@@ -52,7 +52,7 @@ The hardware is a laptop with a webcam, plus any phone. No special device, no cl
 | Face tracking | MediaPipe Face Landmarker: 478 points, blendshapes and iris points. Runs in the browser; the model and WebAssembly runtime are bundled for offline use. |
 | Relay | Node.js with Express 5 and `ws` (WebSocket) on port 3000 |
 | Pairing | QR code (`qrcode`) carrying a random token |
-| Tests | Vitest: 91 unit tests in 5 files |
+| Tests | Vitest: 93 unit tests in 5 files |
 
 ### 3.2 Architecture
 
@@ -137,7 +137,7 @@ I re-ran both commands while writing this report (`npm test` and `npm run evalua
 
 | Measure | Result |
 |---|---|
-| Unit tests | **91 of 91 pass** (5 files, under 2 s) |
+| Unit tests | **93 of 93 pass** (5 files, under 2 s) |
 | Suggestions, on 3,978 held-out simulated messages | The right phrase is in the model's top 3 **55.7 %** of the time, against 37.5 % for a fixed "most frequent" list. |
 | Heart rate on synthetic signals | Within **± 3 bpm** from 52 to 130 bpm, including a lighting flicker placed inside the heart-rate band (which fools a green-channel-only method). Pure noise is graded poor and shows no number. |
 | Heart rate on real people | **Not measured yet.** The validation logger is ready: record next to a smartwatch or finger oximeter, export the CSV, and report the mean absolute error. |
@@ -256,7 +256,7 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
 | 12 | How it works | The six-step chain with a live red ECG trace |
 | 13 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
 | 14 | AI where it matters | The AI versus rules table |
-| 15 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 91 of 91, counted up on screen |
+| 15 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 93 of 93, counted up on screen |
 | 16 | Trust | Privacy and responsible AI |
 | 17 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
 | 18 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
@@ -307,7 +307,7 @@ The packed file has no external references.
 |---|---|
 | **Relevance** | A real, under-served group in Tunisia (stroke, ALS, intubated and cerebral palsy patients). It covers domain 1 (disabilities) and domain 3 (early warning). |
 | **Innovation** | One ordinary camera does both communication and vital signs, and the two are fused: the system notices distress the patient cannot express. |
-| **Technical approach** | AI only where rules cannot work (face tracking, per-person gaze mapping, personalised suggestions). Rules where predictability matters (alerts). Published signal processing for the pulse. 91 tests. |
+| **Technical approach** | AI only where rules cannot work (face tracking, per-person gaze mapping, personalised suggestions). Rules where predictability matters (alerts). Published signal processing for the pulse. 93 tests. |
 | **Responsible AI and data security** | Video never leaves the device. Token pairing, schema validation, quality grades instead of false numbers, a stated skin-tone bias with a way to measure it, and an assistive, not diagnostic, position. |
 | **Demo and presentation** | A judge uses it live with their own eyes, the phone receives the message, and the alert loop closes on stage. The deck puts the audience inside the patient's eye. |
 
@@ -346,7 +346,7 @@ Breathing rate is experimental. Present it as such, or leave it out.
 E:\IEEE\Tech4Health 2.0\
 ├─ t4h book1.pdf                        challenge specifications
 ├─ 3ayni-report.md                      this report
-├─ 3ayni\                               the application (git, 91 tests)
+├─ 3ayni\                               the application (git, 93 tests)
 └─ pitch\
    ├─ 3ayni-pitch.pptx                  PowerPoint deck (10 slides)
    ├─ assets\                           screenshots, room photos, credits.json

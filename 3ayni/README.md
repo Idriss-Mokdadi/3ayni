@@ -15,7 +15,7 @@ Patients after a stroke, with ALS, on a breathing tube, or with severe cerebral 
 | | |
 |---|---|
 | **Communicate** | The patient looks at one of six phrases the nurse chose for the home screen; a ring fills and the phrase is spoken in Darija. Closing the eyes cancels any choice. |
-| **Write** | A gaze keyboard: 12 letters per page, most used first, with previous and next pages and two suggestions in the middle, based on the letters typed and the heart rate. |
+| **Write** | A gaze keyboard with large keys: 7 letters and Space per page, most used first, with previous and next pages and two suggestions in the middle, based on the letters typed and the heart rate. |
 | **Answer** | The nurse's questions fill the screen with just Yes and No. |
 | **Rest** | With no choice for a while, the screen sleeps to one dot (longer awake when the heart rate is high); looking at the dot wakes it. |
 | **Monitor** | Heart rate (and an experimental breathing rate) estimated from the face video, with a signal-quality grade. |
@@ -134,7 +134,7 @@ Run them yourself: `npm test` and `npm run evaluate:predictor`.
 │     ├─ caregiver/main.js
 │     ├─ shared/              protocol, relay link, icons, sound, storage
 │     └─ styles/
-└─ test/                      91 unit tests (vitest)
+└─ test/                      93 unit tests (vitest)
 ```
 
 ## Limits and next steps

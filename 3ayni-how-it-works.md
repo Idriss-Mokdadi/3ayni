@@ -114,7 +114,7 @@ A **medical device** that diagnoses must be certified (CE marking in Europe, the
 | **Express 5** | A small web server framework for Node. | Serves the built pages to the laptop and the phone. |
 | **WebSocket** (`ws` library) | A permanent two-way connection between browser and server. | Instant messages between the bedside and the phones. |
 | **qrcode** | Generates QR codes. | The pairing code a phone scans. |
-| **Vitest** | A test runner for JavaScript. | 91 automated tests. |
+| **Vitest** | A test runner for JavaScript. | 93 automated tests. |
 | **Lucide** | An open-source icon set. | Icons on the tiles. |
 | **IBM Plex Sans / Sans Arabic** | Open-source fonts. | Readable Latin and Arabic text. |
 
@@ -229,21 +229,21 @@ A 3 × 3 grid: **six phrases chosen by the nurse**, then **More phrases** (the c
 
 ### 6.3 The keyboard: most used letters first
 
-A 6 × 4 grid:
+A 4 × 4 grid with large keys, because fewer, bigger targets are chosen more reliably with webcam gaze:
 
 | Row | Content |
 |---|---|
-| Top | The text written so far (inert), Space, Delete, **Speak**, Home |
-| Middle two rows | **12 letters (6 × 2)**, sorted by how often they are used |
+| Top | The text written so far (inert, two cells wide), Delete, **Speak** (it shows **Home** while nothing is written) |
+| Middle two rows | **7 letters and Space (4 × 2)**, letters sorted by how often they are used |
 | Bottom | **Previous letters** on the left, **two suggestions** in the middle, **Next letters** on the right |
 
-- **Letter order:** Arabic letters in order of frequency in written Arabic (ا ل ي م و ن ه ر ت ب ع ك on the first page), so most words need only the first page. A Latin option (Darija as typed in Latin letters, with 3, 7, 9, 5) can be chosen by the nurse. Three pages of 12 each; the arrows wrap around.
+- **Letter order:** Arabic letters in order of frequency in written Arabic (ا ل ي م و ن ه on the first page, ر ت ب ع ك ف د on the second), so most words need only the first pages. A Latin option (Darija as typed in Latin letters, with 3, 7, 9, 5) can be chosen by the nurse. Five pages of 7 letters; the arrows wrap around. The rarest forms (آ ؤ ئ) are left out, and suggestions still match them.
 - **Suggestions** come from two sources:
   1. **whole phrases** that continue the typed letters, ranked by the phrase model (section 9). One look says a whole sentence;
   2. **words** that complete the word being typed: words this patient has typed before (counted on the laptop) and words from the phrases.
 - **Heart rate changes the suggestions:** when the heart rate is 15 % or more above the patient's baseline, phrases of distress (pain, can't breathe, call the nurse, scared, position) come first among the matches. Example: after typing "عيطولي", a calm patient at 3 pm is offered "call my son"; the same letters with a racing heart offer "call the nurse".
 - **Speak** says the text aloud (Arabic voice for Arabic letters, French voice for Latin letters) and sends it to the caregiver phone.
-- Arabic spelling variants are folded together when matching (أ إ آ → ا, ة → ه, ى → ي).
+- Arabic spelling variants are folded together when matching (أ إ آ → ا, ة → ه, ى → ي), and the same text is never offered twice.
 
 ### 6.4 The nurse's questions: just yes or no
 
@@ -485,7 +485,7 @@ This is **privacy by design**: rather than protecting video on a server, there i
 npm test
 ```
 
-**91 automated tests in 5 files:**
+**93 automated tests in 5 files:**
 
 | File | What it proves |
 |---|---|

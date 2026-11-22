@@ -1,5 +1,6 @@
-// Gaze keyboard: 12 letters per page (6 columns x 2 rows), pages ordered from
-// the most to the least used letters, so most words need only the first page.
+// Gaze keyboard: 7 letters and Space per page (4 columns x 2 rows), so each key
+// is a large target for webcam gaze. Pages go from the most to the least used
+// letters, so most words need only the first pages.
 // Under the letters: previous page, two suggestions, next page.
 //
 // Suggestions come from two sources:
@@ -10,23 +11,24 @@
 
 import { DISTRESS_IDS, PHRASES } from './phrases.js';
 
-export const KEYS_PER_PAGE = 12;
+export const KEYS_PER_PAGE = 7; // letters per page; Space is always the 8th key
 
 // Letter order by frequency. Arabic: approximate order of letter frequency in
 // written Arabic, then the hamza and alif forms. Latin: Tunisian Darija as
 // typed in Latin letters ("Arabizi"), where 3, 7, 9 and 5 stand for ع ح ق خ.
+// The rarest forms (آ ؤ ئ) are left out: suggestions match them anyway.
 export const ALPHABETS = {
   ar: {
     dir: 'rtl',
-    letters: [...'اليمونهرتبعك', ...'فدسقحجشةصطخز', ...'ذثغضظأإىءآؤئ'],
+    letters: [...'اليمونهرتبعكفدسقحجشةصطخزذثغضظأإىء'],
   },
   latin: {
     dir: 'ltr',
-    letters: [...'eaionrstlumd', ...'kchb3795yfpg', ...'jwzqvx2\'?.!8'],
+    letters: [...'eaionrstlumdkchb3795yfpgjwzqvx2?.'],
   },
 };
 
-/** The letter pages of an alphabet, 12 letters each. */
+/** The letter pages of an alphabet, KEYS_PER_PAGE letters each (the last may be shorter). */
 export function pages(alphabet) {
   const letters = ALPHABETS[alphabet]?.letters ?? ALPHABETS.ar.letters;
   const result = [];
@@ -114,8 +116,10 @@ export function suggest({ text, alphabet, rankedPhraseIds, lexicon = {}, distres
   const result = [];
   // One phrase first (a whole message in one look), then a word, then the rest.
   if (phraseScores[0]) result.push({ kind: 'phrase', phraseId: phraseScores[0].id });
+  const shown = new Set(result.map((r) => normalise(phraseText(byId.get(r.phraseId), alphabet) ?? '')));
   for (const word of completions) {
     if (result.length >= count) break;
+    if (shown.has(word)) continue; // the same text is already offered as a whole phrase
     result.push({ kind: 'word', word });
   }
   for (const p of phraseScores.slice(1)) {

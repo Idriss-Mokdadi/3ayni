@@ -5,8 +5,8 @@
 //   categories : 5 categories | Back                                    (3 x 2)
 //   category   : 5 phrases | Back                                       (3 x 2)
 //   controls   : settings | Back                                        (3 x 2)
-//   keyboard   : typed text, Space, Delete, Speak, Home                 (6 x 4)
-//                12 letters, most used first
+//   keyboard   : typed text | Delete | Speak (Home when nothing is typed) (4 x 4)
+//                7 letters, most used first, and Space
 //                previous page | 2 suggestions | next page
 //   question   : the question, then Yes | No                           (2 x 2)
 //   sleep      : one dot in the middle; looking at it wakes the board   (3 x 3)
@@ -14,7 +14,7 @@
 // Tiles marked `inert` are shown but can never be chosen.
 
 import { CATEGORIES, PHRASES, PHRASES_BY_ID } from './phrases.js';
-import { ALPHABETS, applyKey, completeWord, pages, suggest } from './keyboard.js';
+import { ALPHABETS, KEYS_PER_PAGE, applyKey, completeWord, pages, suggest } from './keyboard.js';
 
 export const HOME_SLOTS = 6;
 export const DEFAULT_HOME = ['water', 'pain', 'nurse', 'position', 'yes', 'no'].map((id) => ({ id }));
@@ -24,7 +24,7 @@ const LAYOUTS = {
   categories: { columns: 3, rows: 2 },
   category: { columns: 3, rows: 2 },
   controls: { columns: 3, rows: 2 },
-  keyboard: { columns: 6, rows: 4 },
+  keyboard: { columns: 4, rows: 4 },
   question: { columns: 2, rows: 2 },
   sleep: { columns: 3, rows: 3 },
 };
@@ -156,21 +156,26 @@ export class BoardModel {
     const key = (char) => ({ key: `key:${char}`, kind: 'key', char, label: char, dir });
     const suggestions = suggest({ text: this.typed, alphabet: this.alphabet, rankedPhraseIds, lexicon, distress });
     const suggestionTile = (s, i) => {
-      if (!s) return { key: `suggestion:${i}:empty`, kind: 'empty', inert: true, span: 2 };
-      if (s.kind === 'word') return { key: `suggestion:word:${s.word}`, kind: 'suggestion', span: 2, suggestion: s, text: s.word, dir };
+      if (!s) return { key: `suggestion:${i}:empty`, kind: 'empty', inert: true };
+      if (s.kind === 'word') return { key: `suggestion:word:${s.word}`, kind: 'suggestion', suggestion: s, text: s.word, dir };
       const p = this.phrase(s.phraseId);
       return {
-        key: `suggestion:phrase:${p.id}`, kind: 'suggestion', span: 2, suggestion: s, urgency: p.urgency,
+        key: `suggestion:phrase:${p.id}`, kind: 'suggestion', suggestion: s, urgency: p.urgency,
         text: this.alphabet === 'latin' ? p.latin : p.ar, label: p.en, dir,
       };
     };
+    const letterKeys = letters.map(key);
+    while (letterKeys.length < KEYS_PER_PAGE) letterKeys.push({ key: `key:empty:${letterKeys.length}`, kind: 'empty', inert: true });
+    // With nothing written, this key leads home; once there is text, it speaks it.
+    const speakOrHome = this.typed.trim()
+      ? { key: 'speak', kind: 'speak', icon: 'volume-2', ar: 'قول', latin: 'Ql', label: 'Speak' }
+      : { key: 'nav:home', kind: 'nav', target: 'home', icon: 'house', ar: 'البداية', latin: 'Lbideya', label: 'Home' };
     return [
       { key: 'display', kind: 'display', inert: true, span: 2, text: this.typed, dir },
-      { key: 'key:space', kind: 'key', char: 'space', icon: 'space', label: 'Space' },
       { key: 'key:delete', kind: 'key', char: 'delete', icon: 'delete', label: 'Delete' },
-      { key: 'speak', kind: 'speak', icon: 'volume-2', ar: 'قول', latin: 'Ql', label: 'Speak' },
-      { key: 'nav:home', kind: 'nav', target: 'home', icon: 'house', ar: 'البداية', latin: 'Lbideya', label: 'Home' },
-      ...letters.map(key),
+      speakOrHome,
+      ...letterKeys,
+      { key: 'key:space', kind: 'key', char: 'space', icon: 'space', label: 'Space' },
       { key: 'page:prev', kind: 'page', delta: -1, icon: 'chevron-left', label: 'Previous letters' },
       suggestionTile(suggestions[0], 0),
       suggestionTile(suggestions[1], 1),
