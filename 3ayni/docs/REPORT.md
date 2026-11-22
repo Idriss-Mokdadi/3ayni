@@ -260,7 +260,7 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
 | 16 | Trust | Privacy and responsible AI |
 | 17 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
 | 18 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
-| 19 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
+| 19 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the team name. |
 | 20–22 | Q&A backup | Prepared answers: accuracy and safety; patients and daily use; privacy, cost and competitors |
 
 **Controls:** → or Space next, ← back, **N** speaker notes, **T** timer, **A** auto-play, **F** fullscreen. Clicks during a blink are ignored, so slides never stack up.
