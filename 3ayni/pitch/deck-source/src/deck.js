@@ -49,7 +49,7 @@
 
   function showSubtitle(slide, force = false) {
     const ar = slide?.dataset.subAr;
-    const deferred = slide && ['demo', 'try'].includes(slide.id);
+    const deferred = slide && slide.id === 'demo';
     if (!ar || (deferred && !force)) {
       subtitle.classList.remove('is-on');
       guide.classList.remove('talking');
@@ -238,94 +238,6 @@
       callHint.textContent = 'Try to press it.';
       callHint.classList.remove('is-tried');
       if (Deck.autoplay) setTimeout(() => callButton.click(), 6000);
-    },
-  });
-
-  // ---- Try it: the product's own board; the mouse is his gaze
-  const TILES = [
-    { ar: 'نحب نشرب', en: 'I want to drink' },
-    { ar: 'يوجعني', en: 'I am in pain', reply: true },
-    { ar: 'عيطولي للفرملي', en: 'Call the nurse', reply: true },
-    { ar: 'إيه', en: 'Yes' },
-    { ar: 'لا', en: 'No' },
-    { ar: 'أكثر', en: 'More' },
-  ];
-  const DWELL = 1200;
-  const board = $('#board');
-  board.innerHTML = TILES.map(
-    (t, i) => `<button class="app-tile" style="--i:${i}" data-i="${i}" type="button">
-      <b lang="ar">${t.ar}</b><span>${t.en}</span>
-      <svg viewBox="0 0 60 60" aria-hidden="true"><circle class="track" cx="30" cy="30" r="26"/><circle class="fill" cx="30" cy="30" r="26"/></svg>
-    </button>`,
-  ).join('');
-  const tiles = [...board.querySelectorAll('.app-tile')];
-  let hovered = null;
-  let since = 0;
-  let frame = null;
-
-  function speak(text) {
-    if (!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith('ar'));
-    if (voice) u.voice = voice;
-    u.lang = voice?.lang ?? 'ar';
-    u.rate = 0.9;
-    speechSynthesis.speak(u);
-  }
-
-  function hover(i) {
-    if (hovered === i) return;
-    tiles.forEach((t) => {
-      t.classList.remove('is-hover');
-      $('.fill', t).style.strokeDashoffset = 163.4;
-    });
-    hovered = i;
-    since = performance.now();
-    if (i !== null) tiles[i].classList.add('is-hover');
-  }
-
-  function pick(i) {
-    tiles[i].classList.add('is-picked');
-    setTimeout(() => tiles[i].classList.remove('is-picked'), 600);
-    speak(TILES[i].ar);
-    if (TILES[i].reply) {
-      moveGuide('right');
-      showSubtitle($('#try'), true);
-    }
-    since = performance.now() + 900;
-  }
-
-  function loop(now) {
-    if (hovered !== null) {
-      const p = Math.max(0, (now - since) / DWELL);
-      $('.fill', tiles[hovered]).style.strokeDashoffset = 163.4 * (1 - Math.min(1, p));
-      if (p >= 1) pick(hovered);
-    }
-    frame = requestAnimationFrame(loop);
-  }
-
-  board.addEventListener('pointermove', (e) => {
-    const tile = e.target.closest('.app-tile');
-    hover(tile ? Number(tile.dataset.i) : null);
-  });
-  board.addEventListener('pointerleave', () => hover(null));
-  board.addEventListener('click', (e) => {
-    const tile = e.target.closest('.app-tile');
-    if (tile) pick(Number(tile.dataset.i));
-  });
-
-  scene('try', {
-    enter() {
-      hover(null);
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(loop);
-      if (Deck.autoplay) setTimeout(() => hover(1), 1800);
-    },
-    leave() {
-      cancelAnimationFrame(frame);
-      hover(null);
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
     },
   });
 

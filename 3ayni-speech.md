@@ -9,7 +9,7 @@
 
 **Who speaks.** Suggested split: **Idriss** speaks the whole pitch. **Ahmed** sits in front of the laptop as the patient for the demo, already calibrated before the pitch starts, and holds the nurse's phone up for the jury. Change it if you prefer; the script works with one speaker.
 
-**Timing:** about 277 spoken words (about 2 min 18 s); part of the demo text is said while waiting for the alert, and the clicks add a few seconds: about 2 min 30 s in total (2 min 35 s at most). Speak at a calm pace, without rushing the hook. Every slide has a short line. Rehearse with **T**. If you run long, click through slides 16 and 17 without speaking.
+**Timing:** about 270 spoken words (about 2 min 15 s); part of the demo text is said while waiting for the alert, and the clicks add a few seconds: about 2 min 30 s in total (2 min 35 s at most). Speak at a calm pace, without rushing the hook. Every slide has a short line. Rehearse with **T**. If you run long, say nothing on slides 15 and 16 (privacy, scaling).
 
 ---
 
@@ -51,23 +51,19 @@ The call button: his hand cannot press it. [click]
 <!-- 0:06 | 13 words -->
 Nothing today lets him speak, notices his distress, and tells the nurse. [click]
 
-### 9. Try it
-<!-- 0:03 | 7 words -->
-Here, your mouse would be his gaze. [click]
-
-### 10. The solution
+### 9. The solution
 <!-- 0:08 | 17 words -->
 3ayni does all three with one laptop camera: he looks, it speaks Darija, and reads his heart. [click]
 
-### 11. Made for day and night
+### 10. Made for day and night
 <!-- 0:07 | 17 words -->
 The nurse picks his phrases. The keyboard puts frequent letters first. Closed eyes choose nothing. [click]
 
-### 12. How it works
+### 11. How it works
 <!-- 0:05 | 11 words -->
 A face model follows his eyes; skin colour shows each heartbeat. [click]
 
-### 13. Live demo
+### 12. Live demo
 <!-- 0:50 | about 55 words while the app works -->
 Ahmed is our patient. [Alt+Tab to the app]
 He looks at "I want to drink". [ring fills; the laptop speaks] It is already on the nurse's phone.
@@ -77,27 +73,27 @@ He says: I am in pain. [Ahmed looks at the tile]
 Pain and a racing heart: urgent alert, with its reason.
 The nurse taps: I'm on my way. [tap] [Alt+Tab back] [click]
 
-### 14. AI where it matters
+### 13. AI where it matters
 <!-- 0:04 | 8 words -->
 AI where rules can't. Simple rules for alerts. [click]
 
-### 15. What we measured
+### 14. What we measured
 <!-- 0:05 | 11 words -->
 Ninety-six tests pass. A hospital pilot comes next. [click]
 
-### 16. Private and honest
+### 15. Private and honest
 <!-- 0:04 | 8 words -->
 The video never leaves the laptop. [click]
 
-### 17. Scaling
+### 16. Scaling
 <!-- 0:04 | 8 words -->
 Next: an infrared camera for the night. [click]
 
-### 18. Vision
+### 17. Vision
 <!-- 0:05 | 16 words -->
 [slower] Our vision: a voice for every patient who cannot speak, from a camera already in the room. [click]
 
-### 19. Close
+### 18. Close
 <!-- 0:12 | 22 words -->
 Bauby needed two hundred thousand blinks. Am Hédi needs one look. [pause]
 His eyes speak. His heart is heard. [click: the eye closes]
@@ -128,13 +124,13 @@ Thank you.
 **Last lines word for word:** "Bauby needed two hundred thousand blinks. Am Hédi needs one look. His eyes speak. His heart is heard."
 
 **One key word per slide:**
-Bauby → inside the eye → one blink → unheard → guesses → forty seconds → button → all three → mouse → one camera → day and night → face and skin → **demo** (drink, phone, S, wait for "elevated", pain, urgent, on my way) → AI where needed → 96 tests → never leaves → infrared → vision → one look.
+Bauby → inside the eye → one blink → unheard → guesses → forty seconds → button → all three → one camera → day and night → face and skin → **demo** (drink, phone, S, wait for "elevated", pain, urgent, on my way) → AI where needed → 96 tests → never leaves → infrared → vision → one look.
 
 ---
 
 ## Questions and answers (2 minutes)
 
-**How to answer:** two or three sentences, the answer first, then one proof. If you don't know: "We have not measured that yet. It is the first thing our pilot will measure." Backup slides 20–22 hold the short versions: jump to them with the arrow keys.
+**How to answer:** two or three sentences, the answer first, then one proof. If you don't know: "We have not measured that yet. It is the first thing our pilot will measure." Backup slides 19–21 hold the short versions: jump to them with the arrow keys.
 
 ### Accuracy and safety
 **1. How accurate is the camera heart rate?**

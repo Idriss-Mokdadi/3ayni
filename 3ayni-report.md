@@ -238,7 +238,7 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
   - rushes in when the alarm turns the ward red.
 - **His lines** are in Darija, with English subtitles.
 
-**The 22 slides**
+**The 21 slides**
 
 | # | Slide | What happens |
 |---|---|---|
@@ -250,18 +250,17 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
 | 6 | Today: letter boards | A letter board in front of the eye; rows then letters are scanned and the eye blinks to choose. "PAIN" takes 40 s of his time, played 6 times faster. |
 | 7 | Today: call button and monitor | The audience tries to press the call button: nothing happens. The monitor races at 104 bpm but cannot say why. |
 | 8 | No solution does all three | Table: blink codes, letter boards, eye-gaze tablets, phone eye control, monitor and call button, against 3ayni |
-| 9 | Try it | The real board. The mouse is his gaze: hover to fill the ring, and the phrase is spoken. "Pain" or "Call the nurse" brings Karim's answer. |
-| 10 | Solution | Communicate, monitor, alert |
-| 11 | Made for a whole day and night | Keyboard screenshot; nurse-chosen home phrases, keyboard with heart-rate suggestions, yes/no questions, closed eyes choose nothing, screen sleeps to one dot |
-| 12 | How it works | The six-step chain with a live red ECG trace |
-| 13 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
-| 14 | AI where it matters | The AI versus rules table |
-| 15 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 96 of 96, counted up on screen |
-| 16 | Trust | Privacy and responsible AI |
-| 17 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
-| 18 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
-| 19 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the team name. |
-| 20–22 | Q&A backup | Prepared answers: accuracy and safety; patients and daily use; privacy, cost and competitors |
+| 9 | Solution | Communicate, monitor, alert |
+| 10 | Made for a whole day and night | Keyboard screenshot; nurse-chosen home phrases, keyboard with heart-rate suggestions, yes/no questions, closed eyes choose nothing, screen sleeps to one dot |
+| 11 | How it works | The six-step chain with a live red ECG trace |
+| 12 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
+| 13 | AI where it matters | The AI versus rules table |
+| 14 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 96 of 96, counted up on screen |
+| 15 | Trust | Privacy and responsible AI |
+| 16 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
+| 17 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
+| 18 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the team name. |
+| 19–21 | Q&A backup | Prepared answers: accuracy and safety; patients and daily use; privacy, cost and competitors |
 
 **Controls:** → or Space next, ← back, **N** speaker notes, **T** timer, **A** auto-play, **F** fullscreen. Clicks during a blink are ignored, so slides never stack up.
 
@@ -283,7 +282,7 @@ cd "E:\IEEE\Tech4Health 2.0\pitch\html2"
 node pack.mjs
 ```
 
-**Verified.** In headless Chrome, all 22 slides render with no page errors, including:
+**Verified.** In headless Chrome, all 21 slides render with no page errors, including:
 
 - the dive into the eye;
 - half-closed and closed blinks;
