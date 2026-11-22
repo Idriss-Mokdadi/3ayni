@@ -9,7 +9,7 @@ This document explains the whole application from the ground up: the medical pro
 3. [The technologies](#3-the-technologies)
 4. [Seeing the face: MediaPipe](#4-seeing-the-face-mediapipe)
 5. [Gaze: from the eyes to a tile](#5-gaze-from-the-eyes-to-a-tile)
-6. [Choosing: dwell and long blink](#6-choosing-dwell-and-long-blink)
+6. [Choosing, and the screens the patient sees](#6-choosing-and-the-screens-the-patient-sees)
 7. [Heart rate from a camera (rPPG)](#7-heart-rate-from-a-camera-rppg)
 8. [Breathing rate (experimental)](#8-breathing-rate-experimental)
 9. [Phrase suggestions: the small AI model](#9-phrase-suggestions-the-small-ai-model)
@@ -83,7 +83,7 @@ A **medical device** that diagnoses must be certified (CE marking in Europe, the
               │
               ├── eyes ──> gaze features ──> calibration model ──> smoothing ──> which tile?
               │                                                                     │
-              │                                         dwell or long blink ──> CHOOSE
+              │                                         dwell (eyes open) ──> CHOOSE 
               │                                                                     │
               │                     suggestion model ──> board ──> speak phrase ────┤
               │                                                                     │
@@ -114,7 +114,7 @@ A **medical device** that diagnoses must be certified (CE marking in Europe, the
 | **Express 5** | A small web server framework for Node. | Serves the built pages to the laptop and the phone. |
 | **WebSocket** (`ws` library) | A permanent two-way connection between browser and server. | Instant messages between the bedside and the phones. |
 | **qrcode** | Generates QR codes. | The pairing code a phone scans. |
-| **Vitest** | A test runner for JavaScript. | 67 automated tests. |
+| **Vitest** | A test runner for JavaScript. | 86 automated tests. |
 | **Lucide** | An open-source icon set. | Icons on the tiles. |
 | **IBM Plex Sans / Sans Arabic** | Open-source fonts. | Readable Latin and Arabic text. |
 
@@ -194,22 +194,67 @@ The filtered point (0–1 across the screen) is matched to the tile under it. **
 
 ---
 
-## 6. Choosing: dwell and long blink
+## 6. Choosing, and the screens the patient sees
 
-**File:** `selection.js`
+**Files:** `gaze/selection.js`, `board/board-model.js`, `board/board-view.js`, `board/keyboard.js`, `sleep.js`
+
+### 6.1 Choosing with the eyes: dwell
 
 The challenge here is the "**Midas touch problem**": the eyes look at everything, so looking cannot mean choosing, or everything gets chosen.
 
-| Method | How it works |
-|---|---|
-| **Dwell** | Keep looking at the same tile for **1.4 s** (adjustable). A ring fills to show progress. A short glance elsewhere (under 150 ms) doesn't reset it. |
-| **Long blink** | Close both eyes deliberately for **0.6 to 2.5 s**. A natural blink lasts 0.06–0.4 s, so it is never taken as a choice. |
-
-Engineering details:
-
+- **Dwell:** keep looking at the same tile for **1.4 s** (adjustable). A ring fills to show progress. A short glance elsewhere (under 150 ms) doesn't reset it.
+- **Closed eyes choose nothing.** As soon as both eyes close, the ring empties and the current choice is cancelled. When the eyes open again, the dwell starts from zero. A patient who rests or falls asleep in front of the screen never selects anything. (A deliberate long blink as a way to choose still exists in the code, but it is off by default.)
 - **Hysteresis:** an eye counts as closed above a score of 0.55 and as open again only below 0.35, so a half-closed eye doesn't flicker between states.
 - **Cooldown:** after a choice, 0.9 s with no new choice, to avoid double selections.
-- **Fatigue:** the normal blinks are counted. When the blink rate rises well above the patient's own rate, the dwell gets longer and the board simpler.
+- **Fatigue:** the normal blinks are counted. When the blink rate rises well above the patient's own rate, the dwell gets longer.
+
+Each screen is a grid; the gaze point is mapped to the grid cell under it. Some cells are **inert** (the typed text, the question): looking at them never chooses anything.
+
+### 6.2 Home screen: the nurse's six phrases
+
+A 3 × 3 grid: **six phrases chosen by the nurse**, then **More phrases** (the categories) and a wide **Keyboard** button at the bottom.
+
+- The nurse changes the six phrases from her phone (caregiver screen, *Patient's home screen*): each tile is a phrase from the catalogue or **her own words** (up to 60 characters).
+- The phone sends a validated `board` event; the bedside saves it, updates the screen and sends back its current state, so every paired phone stays in sync.
+- Default: I want to drink, I am in pain, Call the nurse, Change my position, Yes, No.
+
+### 6.3 The keyboard: most used letters first
+
+A 6 × 4 grid:
+
+| Row | Content |
+|---|---|
+| Top | The text written so far (inert), Space, Delete, **Speak**, Home |
+| Middle two rows | **12 letters (6 × 2)**, sorted by how often they are used |
+| Bottom | **Previous letters** on the left, **two suggestions** in the middle, **Next letters** on the right |
+
+- **Letter order:** Arabic letters in order of frequency in written Arabic (ا ل ي م و ن ه ر ت ب ع ك on the first page), so most words need only the first page. A Latin option (Darija as typed in Latin letters, with 3, 7, 9, 5) can be chosen by the nurse. Three pages of 12 each; the arrows wrap around.
+- **Suggestions** come from two sources:
+  1. **whole phrases** that continue the typed letters, ranked by the phrase model (section 9). One look says a whole sentence;
+  2. **words** that complete the word being typed: words this patient has typed before (counted on the laptop) and words from the phrases.
+- **Heart rate changes the suggestions:** when the heart rate is 15 % or more above the patient's baseline, phrases of distress (pain, can't breathe, call the nurse, scared, position) come first among the matches. Example: after typing "عيطولي", a calm patient at 3 pm is offered "call my son"; the same letters with a racing heart offer "call the nurse".
+- **Speak** says the text aloud (Arabic voice for Arabic letters, French voice for Latin letters) and sends it to the caregiver phone.
+- Arabic spelling variants are folded together when matching (أ إ آ → ا, ة → ه, ى → ي).
+
+### 6.4 The nurse's questions: just yes or no
+
+When the nurse asks a question from her phone, the screen shows **only the question, large in the middle, with Yes and No under it**. The question itself can't be chosen. The answer goes back to her phone with the question it answers. When the system itself asks "Are you in pain?" (heart rate elevated and no message for 2 minutes), **Yes** is sent as "I am in pain", so the alert rules treat it as pain. An unanswered question returns to the home screen after 3 minutes.
+
+### 6.5 The screen sleeps to one dot
+
+A patient who rests their eyes on the screen all day would end up choosing tiles all day and all night. So after a while without any choice, the screen turns black with **one dot in the middle**. Looking at the dot for **2 seconds** wakes it, back where the patient was. A nurse's question wakes it at once.
+
+The time before sleeping depends on the patient's condition (`sleep.js`):
+
+| Condition | Screen stays on for |
+|---|---|
+| Heart rate at the patient's baseline | 1 minute |
+| Between baseline and +25 % | grows smoothly from 1 to 5 minutes |
+| Heart rate +25 % or more, or "elevated" state | 5 minutes |
+| A call for help (attention or urgent message) in the last 10 minutes | 5 minutes |
+| An urgent alert not yet acknowledged | never sleeps |
+
+The worse the condition, the longer the board stays ready, because the patient may need to speak again soon. With fast demo timings: 20 s and 60 s. Sleep only happens in camera mode; in manual mode a nurse is using the mouse.
 
 ---
 
@@ -308,7 +353,7 @@ Each is detrended and analysed with the FFT between 6 and 36 breaths per minute,
 
 ### 9.1 Why
 
-Reaching a phrase that isn't on the home screen costs 3 selections (More → category → phrase). If the three most likely phrases are on the home screen, it often costs one.
+Typing a message letter by letter takes many looks, and reaching a phrase through the categories costs 3 selections. The model ranks every phrase for this moment, and that ranking feeds the keyboard's suggestions: with nothing typed, its top phrases appear; while typing, the matching phrases come in its order.
 
 ### 9.2 The model
 
@@ -431,15 +476,15 @@ This is **privacy by design**: rather than protecting video on a server, there i
 npm test
 ```
 
-**67 automated tests in 5 files:**
+**86 automated tests in 5 files:**
 
 | File | What it proves |
 |---|---|
-| `test/gaze.test.js` | Ridge regression recovers known weights; calibration maps features to the right positions; the One Euro filter smooths without lag; dwell, long blink, cooldown and hysteresis behave as specified. |
+| `test/gaze.test.js` | Ridge regression recovers known weights; calibration maps features to the right positions; the One Euro filter smooths without lag; dwell, cooldown and hysteresis behave as specified; closing the eyes cancels a choice and never selects. |
 | `test/vitals.test.js` | The FFT finds the right frequency; POS cancels pure lighting changes; the estimator measures 52, 72, 95 and 130 bpm within 3 bpm; it ignores a 1.5 Hz flicker; the band-pass removes slow drift (new); it is not fooled by colour drift near the band's bottom (new); it restarts after an exposure jump (new); pure noise gives "poor" and no number. |
 | `test/roi.test.js` | The regions are placed correctly and the pixel averaging is exact. |
-| `test/logic.test.js` | Board navigation, suggestions, and every care-monitor rule, including the baseline learned from fair readings (new). |
-| `test/server.test.js` | Pairing, refusing wrong tokens, role permissions, validation and history. |
+| `test/logic.test.js` | Every screen fills its grid; the nurse's home phrases; yes/no questions; keyboard pages, keys and suggestions (letters, words, heart rate); screen-sleep timing; suggestions; every care-monitor rule; the protocol, including the nurse's board settings. |
+| `test/server.test.js` | Pairing, refusing wrong tokens, role permissions, validation, history, and the nurse's home phrases travelling to the bedside and back. |
 
 The test signals are **synthetic**: the skin colour is generated with a known heart rate, realistic channel weights (the pulse is strongest in green), lighting changes, sensor noise and timing jitter. Because the right answer is known, accuracy can be measured exactly. Real-world accuracy needs a reference device: the **validation logger** in the operator panel records camera HR next to a smartwatch or oximeter value and exports a CSV with the mean error.
 

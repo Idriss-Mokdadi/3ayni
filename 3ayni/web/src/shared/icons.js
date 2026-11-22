@@ -1,13 +1,14 @@
 // Only the icons the app uses are imported, so the bundle stays small.
 import {
-  Activity, ArrowLeft, Bath, BatteryLow, Bed, BellRing, Check, CircleQuestionMark, CloudLightning, CupSoda,
+  Activity, ArrowLeft, ChevronLeft, ChevronRight, Delete, Keyboard, MessageCircle, Space, Volume2, Bath, BatteryLow, Bed, BellRing, Check, CircleQuestionMark, CloudLightning, CupSoda,
   Eye, EyeOff, GlassWater, Hand, HandHeart, Heart, HeartPulse, Hourglass, House, Lamp, LayoutGrid, Moon, Phone,
   Repeat, ScanEye, SlidersHorizontal, Snowflake, Stethoscope, Sun, Timer, TriangleAlert, Users, Utensils, Wind,
   Wifi, WifiOff, X, Zap, createElement,
 } from 'lucide';
 
 const ICONS = {
-  activity: Activity, 'arrow-left': ArrowLeft, bath: Bath, 'battery-low': BatteryLow, bed: Bed,
+  activity: Activity, 'arrow-left': ArrowLeft, 'chevron-left': ChevronLeft, 'chevron-right': ChevronRight,
+  delete: Delete, keyboard: Keyboard, 'message-circle': MessageCircle, space: Space, 'volume-2': Volume2, bath: Bath, 'battery-low': BatteryLow, bed: Bed,
   'bell-ring': BellRing, check: Check, 'circle-question-mark': CircleQuestionMark, 'cloud-lightning': CloudLightning,
   'cup-soda': CupSoda, eye: Eye, 'eye-off': EyeOff, 'glass-water': GlassWater, hand: Hand, 'hand-heart': HandHeart,
   heart: Heart, 'heart-pulse': HeartPulse, hourglass: Hourglass, house: House, lamp: Lamp, 'layout-grid': LayoutGrid,

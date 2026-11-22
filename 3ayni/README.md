@@ -14,8 +14,10 @@ Patients after a stroke, with ALS, on a breathing tube, or with severe cerebral 
 
 | | |
 |---|---|
-| **Communicate** | The patient looks at one of six large tiles; a ring fills and the phrase is spoken in Darija. A deliberate long blink also selects. |
-| **Suggest** | A small on-device model puts the three most likely phrases on the home screen (one selection instead of three). |
+| **Communicate** | The patient looks at one of six phrases the nurse chose for the home screen; a ring fills and the phrase is spoken in Darija. Closing the eyes cancels any choice. |
+| **Write** | A gaze keyboard: 12 letters per page, most used first, with previous and next pages and two suggestions in the middle, based on the letters typed and the heart rate. |
+| **Answer** | The nurse's questions fill the screen with just Yes and No. |
+| **Rest** | With no choice for a while, the screen sleeps to one dot (longer awake when the heart rate is high); looking at the dot wakes it. |
 | **Monitor** | Heart rate (and an experimental breathing rate) estimated from the face video, with a signal-quality grade. |
 | **Combine** | "Pain" + heart rate above the patient's own baseline → **urgent**. Body under stress + patient silent → the screen asks *"Are you in pain?"* |
 | **Connect** | The caregiver's phone receives messages, alerts and vitals, and can send yes/no questions back. |
@@ -33,7 +35,7 @@ npm start          # builds and starts the server on port 3000
 2. Follow the dot with your eyes for about 8 seconds (calibration).
 3. Press **P** to show the pairing QR code. Scan it with a phone on the same Wi-Fi or hotspot.
 
-No camera? Click **Continue without camera** and use the mouse or keys **1–6**.
+No camera? Click **Continue without camera** and use the mouse or the number keys.
 
 ### Keyboard shortcuts (bedside screen)
 
@@ -65,7 +67,7 @@ Browsers have no Tunisian voice, so without recordings the app falls back to an 
 ```
 camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device)
               │
-              ├─> gaze features ──> personal calibration ──> One Euro filter ──> tile ──> dwell / long blink
+              ├─> gaze features ──> personal calibration ──> One Euro filter ──> tile ──> dwell (eyes open)
               │   (iris position,     (ridge regression,       (smooth when still,             │
               │    eye rotation,       5 dots, ~8 s)            responsive when moving)        ▼
               │    head pose)                                              board ──> speech + message ──┐
@@ -93,7 +95,7 @@ The jury asked for purposeful AI. Each part uses the simplest tool that works:
 
 Run them yourself: `npm test` and `npm run evaluate:predictor`.
 
-- **Suggestions** (2,000 held-out simulated conversations): top-3 hit rate **55.7 %**, average **1.89 selections per message vs. 3.00** without suggestions, **37 % less effort**. A fixed "most frequent" list reaches only 2.25. *These are simulated routines, not patient data; real numbers must come from a pilot.*
+- **Suggestions** (3,978 held-out simulated messages): the right phrase is in the model's top 3 **55.7 %** of the time, against 37.5 % for a fixed "most frequent" list. Used as the home screen, that would mean 1.89 selections per message instead of 3. *These are simulated routines, not patient data; real numbers must come from a pilot.*
 - **Heart rate on synthetic signals**: within 3 bpm from 52 to 130 bpm, including a lighting flicker placed inside the heart-rate band (which fools a green-channel-only method). Pure noise is reported as **poor quality, not a number**.
 - **Heart rate on real people**: use the operator panel's validation logger next to a smartwatch or finger pulse oximeter, then export the CSV and report the mean absolute error.
 
@@ -132,7 +134,7 @@ Run them yourself: `npm test` and `npm run evaluate:predictor`.
 │     ├─ caregiver/main.js
 │     ├─ shared/              protocol, relay link, icons, sound, storage
 │     └─ styles/
-└─ test/                      67 unit tests (vitest)
+└─ test/                      86 unit tests (vitest)
 ```
 
 ## Limits and next steps

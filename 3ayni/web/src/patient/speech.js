@@ -25,6 +25,20 @@ export class Speaker {
     return this.#synthesize(this.language === 'fr' ? phrase.fr : phrase.ar);
   }
 
+  /**
+   * Speaks free text written on the keyboard.
+   * @param {string} text
+   * @param {'ar'|'fr'} language Arabic letters use an Arabic voice; Latin letters a French one
+   */
+  speakText(text, language = this.language) {
+    this.stop();
+    const previous = this.language;
+    this.language = language;
+    const result = this.#synthesize(text);
+    this.language = previous;
+    return result;
+  }
+
   stop() {
     this.currentAudio?.pause();
     this.currentAudio = null;

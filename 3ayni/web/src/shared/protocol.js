@@ -6,16 +6,26 @@ export const PROTOCOL_VERSION = 1;
 export const MAX_MESSAGE_BYTES = 4096;
 
 /** Events the bedside (patient) screen may send. */
-export const PATIENT_EVENTS = new Set(['message', 'vitals', 'alert', 'status']);
+export const PATIENT_EVENTS = new Set(['message', 'vitals', 'alert', 'status', 'board-state']);
 
 /** Events the caregiver dashboard may send. */
-export const CAREGIVER_EVENTS = new Set(['question', 'ack']);
+export const CAREGIVER_EVENTS = new Set(['question', 'ack', 'board']);
 
 export const URGENCY = Object.freeze({ ROUTINE: 'routine', ATTENTION: 'attention', URGENT: 'urgent' });
 const URGENCY_LEVELS = new Set(Object.values(URGENCY));
 
 const isFiniteOrNull = (value) => value === null || Number.isFinite(value);
 const isShortText = (value, max = 280) => typeof value === 'string' && value.length > 0 && value.length <= max;
+
+/** The nurse's board settings: six home phrases (catalogue id or own text) and the keyboard alphabet. */
+const isBoardConfig = (p) =>
+  Array.isArray(p.home) &&
+  p.home.length === 6 &&
+  p.home.every(
+    (item) =>
+      item && typeof item === 'object' && (isShortText(item.id, 64) ? item.text === undefined : isShortText(item.text, 60) && item.id === undefined),
+  ) &&
+  ['ar', 'latin'].includes(p.alphabet);
 
 const validators = {
   message: (p) =>
@@ -29,6 +39,8 @@ const validators = {
   status: (p) => typeof p.state === 'string' && p.state.length <= 32,
   question: (p) => isShortText(p.text, 120),
   ack: (p) => isShortText(p.alertId, 64),
+  board: isBoardConfig,
+  'board-state': isBoardConfig,
 };
 
 /**

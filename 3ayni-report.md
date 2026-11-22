@@ -28,8 +28,10 @@ This report covers everything built for the challenge:
 
 | Function | What the patient or caregiver experiences |
 |---|---|
-| **Communicate** | The patient looks at one of six large tiles. A ring fills (dwell, 1.2 s by default) and the phrase is spoken aloud in Darija. A deliberate long blink also selects. |
-| **Suggest** | A small on-device model puts the three most likely phrases on the home screen, so one selection is often enough instead of three. |
+| **Communicate** | The patient looks at one of six phrases the nurse chose for the home screen. A ring fills (dwell, 1.4 s) and the phrase is spoken aloud in Darija. Closing the eyes cancels any choice. |
+| **Write** | A gaze keyboard: 12 letters per page, most used first; previous and next pages; two suggestions based on the letters typed and the heart rate. |
+| **Answer** | The nurse's questions fill the screen with just Yes and No. |
+| **Rest** | With no choice for a while, the screen sleeps to one dot, staying awake longer when the heart rate is high; looking at the dot wakes it. |
 | **Monitor** | Heart rate (and an experimental breathing rate) is estimated from the face video. Every value carries a signal-quality grade. |
 | **Combine** | "Pain" plus a heart rate above the patient's own baseline raises an **urgent** alert. If the body is under stress and the patient stays silent, the screen asks *"Are you in pain?"* |
 | **Connect** | The caregiver's phone receives messages, alerts and vitals, and can send yes/no questions back. "I'm on my way" tells the patient that help is coming. |
@@ -50,14 +52,14 @@ The hardware is a laptop with a webcam, plus any phone. No special device, no cl
 | Face tracking | MediaPipe Face Landmarker: 478 points, blendshapes and iris points. Runs in the browser; the model and WebAssembly runtime are bundled for offline use. |
 | Relay | Node.js with Express 5 and `ws` (WebSocket) on port 3000 |
 | Pairing | QR code (`qrcode`) carrying a random token |
-| Tests | Vitest: 67 unit tests in 5 files |
+| Tests | Vitest: 86 unit tests in 5 files |
 
 ### 3.2 Architecture
 
 ```
 camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device)
               │
-              ├─> gaze features ──> personal calibration ──> One Euro filter ──> tile ──> dwell / long blink
+              ├─> gaze features ──> personal calibration ──> One Euro filter ──> tile ──> dwell (eyes open)
               │                     (ridge regression,                                     │
               │                      5 dots, ~8 s)                                         ▼
               │                                        suggestions (phrase model) ──> board ──> speech + message ─┐
@@ -73,7 +75,7 @@ camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device
 |---|---|
 | `server/index.js` | Relay. Handles pairing tokens, checks each event against a schema, limits size and rate, keeps per-role permissions, and keeps a short history for phones that join late. |
 | `web/src/patient/camera.js` | Webcam and MediaPipe loop |
-| `web/src/patient/gaze/` | `features.js` (iris position, eye rotation, head pose), `calibration.js` (5-dot procedure), `ridge.js` (ridge regression), `one-euro.js` (One Euro filter), `selection.js` (dwell and long blink) |
+| `web/src/patient/gaze/` | `features.js` (iris position, eye rotation, head pose), `calibration.js` (5-dot procedure), `ridge.js` (ridge regression), `one-euro.js` (One Euro filter), `selection.js` (dwell; closed eyes cancel) |
 | `web/src/patient/vitals/` | `roi.js` (forehead and cheek skin regions), `dsp.js` (detrending, band-pass, FFT), `rppg.js` (POS heart-rate estimator with SNR quality grade) |
 | `web/src/patient/board/` | `phrases.js` (Darija, French and English phrases), `board-model.js` (navigation), `board-view.js` (rendering) |
 | `web/src/patient/predictor.js` | Phrase suggestion model |
@@ -94,7 +96,7 @@ camera frame ─┬─> MediaPipe face mesh (478 points + blendshapes, on device
 - For each frame, a feature vector is built from the iris position inside each eye, the eye-look blendshapes and the head pose.
 - A 5-dot calibration (about 8 s) fits a **ridge regression** from these features to screen coordinates. It is fitted per person, because every face and camera position is different.
 - A **One Euro filter** smooths the cursor: steady when the eye rests, responsive when it moves.
-- The cursor is mapped to one of six tiles. A tile is selected after a **dwell** (the ring fills) or by a **long deliberate blink**, which is told apart from natural blinks by its duration.
+- The cursor is mapped to the grid cell under it. A tile is selected after a **dwell** (the ring fills). **Closing the eyes cancels the choice**, so a resting patient never selects anything.
 
 **Heart rate (rPPG)**
 - The mean skin colour of the forehead and cheeks is tracked over a sliding window.
@@ -135,8 +137,8 @@ I re-ran both commands while writing this report (`npm test` and `npm run evalua
 
 | Measure | Result |
 |---|---|
-| Unit tests | **67 of 67 pass** (5 files, under 1 s) |
-| Suggestions, on 3,978 held-out simulated messages | Top-3 hit rate **55.7 %**. Average **1.89 selections per message**, against 3.00 without suggestions and 2.25 for a fixed "most frequent" list. **37 % less effort.** |
+| Unit tests | **86 of 86 pass** (5 files, under 2 s) |
+| Suggestions, on 3,978 held-out simulated messages | The right phrase is in the model's top 3 **55.7 %** of the time, against 37.5 % for a fixed "most frequent" list. |
 | Heart rate on synthetic signals | Within **± 3 bpm** from 52 to 130 bpm, including a lighting flicker placed inside the heart-rate band (which fools a green-channel-only method). Pure noise is graded poor and shows no number. |
 | Heart rate on real people | **Not measured yet.** The validation logger is ready: record next to a smartwatch or finger oximeter, export the CSV, and report the mean absolute error. |
 
@@ -170,7 +172,7 @@ npm install
 npm start
 ```
 
-1. Open **http://localhost:3000** in Chrome or Edge and click **Start camera**. With no camera, use **Continue without camera** and the mouse or keys 1–6.
+1. Open **http://localhost:3000** in Chrome or Edge and click **Start camera**. With no camera, use **Continue without camera** and the mouse or the number keys.
 2. Follow the dot with your eyes for about 8 seconds.
 3. Press **P** and scan the QR code with a phone on the same Wi-Fi or hotspot.
 
@@ -236,7 +238,7 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
   - rushes in when the alarm turns the ward red.
 - **His lines** are in Darija, with English subtitles.
 
-**The 18 slides**
+**The 22 slides**
 
 | # | Slide | What happens |
 |---|---|---|
@@ -250,14 +252,16 @@ One offline file of 3.1 MB: fonts, scripts, images and video are all inlined.
 | 8 | No solution does all three | Table: blink codes, letter boards, eye-gaze tablets, phone eye control, monitor and call button, against 3ayni |
 | 9 | Try it | The real board. The mouse is his gaze: hover to fill the ring, and the phrase is spoken. "Pain" or "Call the nurse" brings Karim's answer. |
 | 10 | Solution | Communicate, monitor, alert |
-| 11 | How it works | The six-step chain with a live red ECG trace |
-| 12 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
-| 13 | AI where it matters | The AI versus rules table |
-| 14 | Proof | 37 %, ± 3 bpm, 67 of 67, counted up on screen |
-| 15 | Trust | Privacy and responsible AI |
-| 16 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
-| 17 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
-| 18 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
+| 11 | Made for a whole day and night | Keyboard screenshot; nurse-chosen home phrases, keyboard with heart-rate suggestions, yes/no questions, closed eyes choose nothing, screen sleeps to one dot |
+| 12 | How it works | The six-step chain with a live red ECG trace |
+| 13 | Demo | Heart rate climbs from 72 to 106. The alarm turns the ward red, Karim rushes in: "جاي، ما تخافش." |
+| 14 | AI where it matters | The AI versus rules table |
+| 15 | Proof | 56 % (top-3 suggestions), ± 3 bpm, 86 of 86, counted up on screen |
+| 16 | Trust | Privacy and responsible AI |
+| 17 | Scaling | Hardware (webcam today, low-cost infrared camera for night and dark rooms, then tablets and Android phones), deployment (pilot ward, public hospitals and rehab centres, home with a family app), product (Darija voice banking, head or switch input, nurse call integration, pain log) |
+| 18 | Vision | "A voice for every patient who cannot speak, from a camera already in the room." |
+| 19 | Close | "His eyes speak. His heart is heard." Karim: "يعيشك يا كريم." The last click closes the eye for good, and "Questions and discussion are welcome" appears with the credits. |
+| 20–22 | Q&A backup | Prepared answers: accuracy and safety; patients and daily use; privacy, cost and competitors |
 
 **Controls:** → or Space next, ← back, **N** speaker notes, **T** timer, **A** auto-play, **F** fullscreen. Clicks during a blink are ignored, so slides never stack up.
 
@@ -279,7 +283,7 @@ cd "E:\IEEE\Tech4Health 2.0\pitch\html2"
 node pack.mjs
 ```
 
-**Verified.** In headless Chrome, all 18 slides render with no page errors, including:
+**Verified.** In headless Chrome, all 22 slides render with no page errors, including:
 
 - the dive into the eye;
 - half-closed and closed blinks;
@@ -303,7 +307,7 @@ The packed file has no external references.
 |---|---|
 | **Relevance** | A real, under-served group in Tunisia (stroke, ALS, intubated and cerebral palsy patients). It covers domain 1 (disabilities) and domain 3 (early warning). |
 | **Innovation** | One ordinary camera does both communication and vital signs, and the two are fused: the system notices distress the patient cannot express. |
-| **Technical approach** | AI only where rules cannot work (face tracking, per-person gaze mapping, personalised suggestions). Rules where predictability matters (alerts). Published signal processing for the pulse. 67 tests. |
+| **Technical approach** | AI only where rules cannot work (face tracking, per-person gaze mapping, personalised suggestions). Rules where predictability matters (alerts). Published signal processing for the pulse. 86 tests. |
 | **Responsible AI and data security** | Video never leaves the device. Token pairing, schema validation, quality grades instead of false numbers, a stated skin-tone bias with a way to measure it, and an assistive, not diagnostic, position. |
 | **Demo and presentation** | A judge uses it live with their own eyes, the phone receives the message, and the alert loop closes on stage. The deck puts the audience inside the patient's eye. |
 
@@ -342,7 +346,7 @@ Breathing rate is experimental. Present it as such, or leave it out.
 E:\IEEE\Tech4Health 2.0\
 ├─ t4h book1.pdf                        challenge specifications
 ├─ 3ayni-report.md                      this report
-├─ 3ayni\                               the application (git, 67 tests)
+├─ 3ayni\                               the application (git, 86 tests)
 └─ pitch\
    ├─ 3ayni-pitch.pptx                  PowerPoint deck (10 slides)
    ├─ assets\                           screenshots, room photos, credits.json

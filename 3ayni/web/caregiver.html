@@ -68,6 +68,21 @@
       </section>
 
       <section class="card">
+        <div class="card-label"><span>Patient's home screen</span><span class="muted" id="board-status">Waiting for the bedside</span></div>
+        <form class="board-form" id="board-form">
+          <div class="board-slots" id="board-slots"></div>
+          <label class="board-row">
+            <span>Keyboard letters</span>
+            <select id="board-alphabet">
+              <option value="ar">Arabic</option>
+              <option value="latin">Latin (Darija as typed in Latin letters)</option>
+            </select>
+          </label>
+          <button class="btn btn-primary btn-block" type="submit">Update the patient's screen</button>
+        </form>
+      </section>
+
+      <section class="card">
         <div class="card-label"><span>History</span></div>
         <ol class="history" id="history"></ol>
       </section>

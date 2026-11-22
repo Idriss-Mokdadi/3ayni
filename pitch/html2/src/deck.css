@@ -264,6 +264,16 @@ h2.top { top: 196px; font-size: 44px; }
 .vision-text { top: 290px; width: 760px; }
 .vision-text p { margin-top: 22px; font-size: 40px; line-height: 1.2; color: var(--soft); }
 
+/* Features */
+.features { display: grid; gap: 18px; top: 270px; width: 400px; }
+.features li { font-size: 22px; line-height: 1.32; color: var(--soft); }
+.features strong { color: var(--white); }
+
+/* Q&A backup slides */
+.qa { position: absolute; left: 260px; right: 260px; top: 280px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 60px; }
+.qa h3 { font-size: 24px; line-height: 1.2; font-weight: 600; margin-bottom: 10px; }
+.qa p { font-size: 19px; line-height: 1.42; color: var(--soft); }
+
 /* Next */
 .two-lists { margin-top: 44px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; }
 .two-lists h3 { font-size: 26px; font-weight: 600; margin-bottom: 14px; }

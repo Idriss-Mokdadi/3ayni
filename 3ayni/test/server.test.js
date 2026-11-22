@@ -83,4 +83,18 @@ describe('relay server', () => {
     expect(history.some((e) => e.type === 'message' && e.payload.id === 'water')).toBe(true);
     late.socket.close();
   });
+
+  it('carries the nurse home phrases to the bedside and the bedside state back', async () => {
+    const patient = connect('patient');
+    const caregiver = connect('caregiver');
+    await Promise.all([patient.opened, caregiver.opened]);
+    const home = [{ id: 'water' }, { text: 'Is my wife here?' }, { id: 'pain' }, { id: 'nurse' }, { id: 'yes' }, { id: 'no' }];
+    caregiver.socket.send(JSON.stringify({ type: 'board', ts: 3, payload: { home, alphabet: 'latin' } }));
+    await waitFor(() => patient.received.some((e) => e.type === 'board'));
+    expect(patient.received.find((e) => e.type === 'board').payload.home[1]).toEqual({ text: 'Is my wife here?' });
+    patient.socket.send(JSON.stringify({ type: 'board-state', ts: 4, payload: { home, alphabet: 'latin' } }));
+    await waitFor(() => caregiver.received.some((e) => e.type === 'board-state'));
+    patient.socket.close();
+    caregiver.socket.close();
+  });
 });

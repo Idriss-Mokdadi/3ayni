@@ -1,7 +1,11 @@
-// Decides when looking at a tile means "choose it". Two ways to choose:
-//   dwell  - keep looking at the tile until the ring fills (default 1.4 s)
-//   blink  - close both eyes deliberately for 0.6 to 2.5 s
-// Normal blinks (< 0.4 s) are counted for the fatigue estimate but never select.
+// Decides when looking at a tile means "choose it": keep looking at the tile
+// until the ring fills (dwell, default 1.4 s).
+//
+// Closing the eyes stops everything: the ring empties and nothing can be
+// chosen until the eyes open again and the dwell starts over. A patient who
+// rests or sleeps with the board in front of them never selects by accident.
+// Normal blinks (< 0.4 s) are counted for the fatigue estimate only.
+// A deliberate long blink as a way to choose exists but is off by default.
 
 const CLOSE_THRESHOLD = 0.55;
 const OPEN_THRESHOLD = 0.35; // lower than CLOSE_THRESHOLD so a half-closed eye does not flicker
@@ -14,7 +18,7 @@ export class SelectionEngine {
     hysteresisMs = 150,
     longBlinkMs = [600, 2500],
     dwellEnabled = true,
-    blinkEnabled = true,
+    blinkEnabled = false,
   } = {}) {
     Object.assign(this, { dwellMs, cooldownMs, hysteresisMs, longBlinkMs, dwellEnabled, blinkEnabled });
     this.reset(0);
@@ -45,11 +49,16 @@ export class SelectionEngine {
     if (!this.eyesClosed && closure > CLOSE_THRESHOLD) {
       this.eyesClosed = true;
       this.closedSince = t;
-      this.pausedDwell = t - this.hoverStart; // freeze dwell progress while eyes are shut
+      if (!this.blinkEnabled && this.hovered !== null) {
+        // Eyes closed: cancel the current choice entirely.
+        this.hovered = null;
+        this.candidate = null;
+        events.push({ type: 'hover', tile: null });
+      }
     } else if (this.eyesClosed && closure < OPEN_THRESHOLD) {
       this.eyesClosed = false;
       const duration = t - this.closedSince;
-      this.hoverStart = t - this.pausedDwell;
+      this.hoverStart = t; // any dwell starts from zero after the eyes open
       if (duration >= NORMAL_BLINK_MS[0] && duration < NORMAL_BLINK_MS[1]) {
         this.blinkTimes.push(t);
         events.push({ type: 'blink' });

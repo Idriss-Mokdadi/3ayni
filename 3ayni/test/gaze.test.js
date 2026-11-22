@@ -140,8 +140,19 @@ describe('SelectionEngine', () => {
     expect(engine.blinkRate(700)).toBe(1);
   });
 
-  it('selects the hovered tile with a deliberate long blink', () => {
-    const engine = new SelectionEngine({ dwellEnabled: false, cooldownMs: 0 });
+  it('closing the eyes cancels the current choice and never selects', () => {
+    const engine = new SelectionEngine({ dwellMs: 1400, cooldownMs: 0 });
+    run(engine, 0, 1200, { tile: 2, closure: 0 }); // ring almost full
+    const closed = run(engine, 1200, 4000, { tile: 2, closure: 0.95 });
+    expect(closed).toContainEqual({ type: 'hover', tile: null });
+    expect(closed.some((e) => e.type === 'select')).toBe(false);
+    // Eyes open again: the dwell starts from zero, not from where it was.
+    const reopened = run(engine, 4000, 5000, { tile: 2, closure: 0 });
+    expect(reopened.some((e) => e.type === 'select')).toBe(false);
+  });
+
+  it('can select with a deliberate long blink when that option is turned on', () => {
+    const engine = new SelectionEngine({ dwellEnabled: false, blinkEnabled: true, cooldownMs: 0 });
     run(engine, 0, 500, { tile: 3, closure: 0 });
     run(engine, 500, 1400, { tile: null, closure: 0.95 });
     const events = run(engine, 1400, 1450, { tile: 3, closure: 0 });

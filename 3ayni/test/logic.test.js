@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { PhrasePredictor, timeBucket } from '../web/src/patient/predictor.js';
 import { seedPredictor, generateRoutines } from '../web/src/patient/care-routines.js';
 import { CareMonitor, RULES } from '../web/src/patient/fusion.js';
-import { BoardModel, TILE_COUNT } from '../web/src/patient/board/board-model.js';
-import { PHRASES, PHRASES_BY_ID, CATEGORIES } from '../web/src/patient/board/phrases.js';
+import { BoardModel } from '../web/src/patient/board/board-model.js';
+import { cellMap } from '../web/src/patient/board/board-view.js';
+import { ALPHABETS, applyKey, completeWord, learnWords, normalise, pages as keyboardPages, suggest as suggestKeys } from '../web/src/patient/board/keyboard.js';
+import { SLEEP_RULES, sleepDelayMs } from '../web/src/patient/sleep.js';
+import { PHRASES, PHRASES_BY_ID, CATEGORIES, DISTRESS_IDS as DISTRESS } from '../web/src/patient/board/phrases.js';
 import { parseEvent, PATIENT_EVENTS, CAREGIVER_EVENTS } from '../web/src/shared/protocol.js';
 
 describe('PhrasePredictor', () => {
@@ -136,33 +139,108 @@ describe('CareMonitor', () => {
 });
 
 describe('BoardModel', () => {
-  it('always shows exactly six tiles', () => {
+  // Every screen's tiles exactly fill its grid (spans included).
+  const cellsUsed = (tiles) => tiles.reduce((n, t) => n + (t.span ?? 1), 0);
+  const fills = (board) => {
+    const { columns, rows } = board.layout();
+    expect(cellsUsed(board.tiles(['water', 'pain', 'sleep']))).toBe(columns * rows);
+  };
+
+  it('every screen fills its grid', () => {
     const board = new BoardModel();
-    expect(board.tiles(['water', 'pain', 'sleep'])).toHaveLength(TILE_COUNT);
-    board.select(board.tiles()[5]); // More
-    expect(board.screen.name).toBe('categories');
-    expect(board.tiles()).toHaveLength(TILE_COUNT);
+    fills(board); // home
+    board.select({ kind: 'nav', target: 'keyboard' });
+    fills(board);
+    board.ask('Are you thirsty?');
+    fills(board);
+    board.sleep();
+    fills(board);
     for (const category of CATEGORIES) {
       const b = new BoardModel();
       b.select({ kind: 'nav', target: 'category', categoryId: category.id });
-      expect(b.tiles()).toHaveLength(TILE_COUNT);
+      fills(b);
     }
+  });
+
+  it('home shows the six phrases chosen by the nurse, then More and the keyboard', () => {
+    const board = new BoardModel();
+    board.setHome([{ id: 'sleep' }, { text: 'Is my wife here?' }, { id: 'pain' }, { id: 'cold' }, { id: 'yes' }, { id: 'no' }]);
+    const tiles = board.tiles();
+    expect(tiles.slice(0, 6).map((t) => t.label)).toEqual(['I want to sleep', 'Is my wife here?', 'I am in pain', 'I am cold', 'Yes', 'No']);
+    expect(tiles.at(-1)).toMatchObject({ target: 'keyboard', span: 2 });
+    const action = board.select(tiles[1]);
+    expect(action.kind).toBe('say');
+    expect(board.phrase(action.phraseId).en).toBe('Is my wife here?');
+  });
+
+  it('ignores unknown phrase ids from the nurse and fills empty slots', () => {
+    const board = new BoardModel();
+    board.setHome([{ id: 'not-a-phrase' }, { id: 'pain' }]);
+    expect(board.homeItems).toHaveLength(6);
+    expect(board.homeItems.some((item) => item.id === 'not-a-phrase')).toBe(false);
   });
 
   it('reaches any phrase in three selections and returns home after speaking', () => {
     const board = new BoardModel();
-    board.select(board.tiles([])[5]); // More
+    board.select(board.tiles().find((t) => t.target === 'categories')); // More
     board.select(board.tiles().find((t) => t.categoryId === 'needs'));
     const action = board.select(board.tiles().find((t) => t.phraseId === 'water'));
     expect(action).toEqual({ kind: 'say', phraseId: 'water', answeredQuestion: null });
     expect(board.screen.name).toBe('home');
   });
 
-  it('reports which question an answer belongs to', () => {
+  it('a question shows only the question, Yes and No; the question cannot be chosen', () => {
     const board = new BoardModel();
     board.ask('Are you thirsty?');
-    const action = board.select(board.tiles()[0]);
-    expect(action).toEqual({ kind: 'say', phraseId: 'yes', answeredQuestion: 'Are you thirsty?' });
+    const tiles = board.tiles();
+    expect(tiles.map((t) => t.kind)).toEqual(['question', 'phrase', 'phrase']);
+    expect(tiles[0].inert).toBe(true);
+    expect(board.select(tiles[0])).toEqual({ kind: 'none' });
+    expect(board.select(tiles[1])).toEqual({ kind: 'say', phraseId: 'yes', answeredQuestion: 'Are you thirsty?' });
+  });
+
+  it('"yes" to the system\'s "Are you in pain?" says "I am in pain"', () => {
+    const board = new BoardModel();
+    board.ask('Are you in pain?', { yesMeans: 'pain' });
+    expect(board.select(board.tiles()[1])).toEqual({ kind: 'say', phraseId: 'pain', answeredQuestion: 'Are you in pain?' });
+  });
+
+  it('types with the keyboard, pages through letters and speaks the text', () => {
+    const board = new BoardModel();
+    board.select({ kind: 'nav', target: 'keyboard' });
+    const pick = (char) => board.select(board.tiles().find((t) => t.kind === 'key' && t.char === char));
+    pick('م');
+    pick('ا');
+    expect(board.typed).toBe('ما');
+    const firstPage = board.tiles().filter((t) => t.kind === 'key' && t.char.length === 1);
+    expect(firstPage).toHaveLength(12);
+    board.select(board.tiles().find((t) => t.kind === 'page' && t.delta === 1));
+    expect(board.tiles().find((t) => t.kind === 'key' && t.char.length === 1).char).toBe('ف');
+    board.select(board.tiles().find((t) => t.kind === 'page' && t.delta === -1));
+    board.select(board.tiles().find((t) => t.kind === 'page' && t.delta === -1)); // wraps to the last page
+    expect(board.page).toBe(2);
+    pick('delete');
+    expect(board.typed).toBe('م');
+    const action = board.select(board.tiles().find((t) => t.kind === 'speak'));
+    expect(action).toEqual({ kind: 'sayText', text: 'م', alphabet: 'ar' });
+    expect(board.screen.name).toBe('home');
+  });
+
+  it('a phrase suggestion on the keyboard is said at once', () => {
+    const board = new BoardModel();
+    board.select({ kind: 'nav', target: 'keyboard' });
+    const suggestion = board.tiles(['pain', 'nurse']).find((t) => t.kind === 'suggestion');
+    expect(board.select(suggestion)).toEqual({ kind: 'say', phraseId: 'pain', answeredQuestion: null });
+  });
+
+  it('sleeps with one dot and wakes back to where the patient was', () => {
+    const board = new BoardModel();
+    board.select({ kind: 'nav', target: 'keyboard' });
+    board.sleep();
+    const tiles = board.tiles();
+    expect(tiles.filter((t) => !t.inert).map((t) => t.kind)).toEqual(['wake']);
+    expect(board.select(tiles[4])).toEqual({ kind: 'wake' });
+    expect(board.screen.name).toBe('keyboard');
   });
 
   it('toggles vitals sharing from the settings screen', () => {
@@ -189,8 +267,107 @@ describe('BoardModel', () => {
   });
 });
 
+describe('cellMap', () => {
+  it('maps spans and leaves inert cells unchoosable', () => {
+    const cells = cellMap(
+      [{ inert: true, span: 2 }, {}, {}, { span: 2 }],
+      { columns: 3, rows: 2 },
+    );
+    // a 2-wide inert tile, then one tile; next row: one tile, then a 2-wide tile
+    expect(cells).toEqual([
+      [null, null, 1],
+      [2, 3, 3],
+    ]);
+  });
+});
+
+describe('keyboard', () => {
+  it('has pages of 12 letters, most used letters first', () => {
+    for (const alphabet of Object.keys(ALPHABETS)) {
+      const all = keyboardPages(alphabet);
+      expect(all.length).toBeGreaterThanOrEqual(3);
+      for (const page of all) expect(page).toHaveLength(12);
+      expect(new Set(all.flat()).size).toBe(all.flat().length); // no letter twice
+    }
+    expect(keyboardPages('ar')[0].slice(0, 3)).toEqual(['ا', 'ل', 'ي']);
+    expect(keyboardPages('latin')[0][0]).toBe('e');
+  });
+
+  it('applies space and delete sensibly', () => {
+    expect(applyKey('', 'space')).toBe('');
+    expect(applyKey('ma', 'space')).toBe('ma ');
+    expect(applyKey('ma ', 'space')).toBe('ma ');
+    expect(applyKey('ma', 'delete')).toBe('m');
+    expect(applyKey('', 'delete')).toBe('');
+  });
+
+  it('with nothing typed, suggests the phrase model\'s top phrases', () => {
+    expect(suggestKeys({ text: '', alphabet: 'ar', rankedPhraseIds: ['pain', 'nurse', 'water'] })).toEqual([
+      { kind: 'phrase', phraseId: 'pain' },
+      { kind: 'phrase', phraseId: 'nurse' },
+    ]);
+  });
+
+  it('suggests phrases that start with the typed letters', () => {
+    const ranked = ['water', 'sleep', 'family'];
+    const [first] = suggestKeys({ text: 'نحب ن', alphabet: 'ar', rankedPhraseIds: ranked });
+    // "نحب نشرب" (water), "نحب نرقد" (sleep): the higher-ranked one comes first
+    expect(first).toEqual({ kind: 'phrase', phraseId: 'water' });
+  });
+
+  it('a racing heart puts distress phrases first among matches', () => {
+    // "عيطولي ..." starts four phrases: nurse, doctor, daughter, son.
+    const model = seedPredictor(new PhrasePredictor());
+    const ranked = (distress) => model.rank({ previousId: null, hour: 15, distress }).map((e) => e.id);
+    const calm = suggestKeys({ text: 'عيطولي', alphabet: 'ar', rankedPhraseIds: ranked(false) });
+    const racing = suggestKeys({ text: 'عيطولي', alphabet: 'ar', rankedPhraseIds: ranked(true), distress: true });
+    expect(calm[0].phraseId).not.toBe('nurse'); // at 3 pm this patient usually calls family
+    expect(racing[0]).toEqual({ kind: 'phrase', phraseId: 'nurse' });
+    // Nothing typed yet: distress phrases come first too.
+    expect(DISTRESS.has(suggestKeys({ text: '', alphabet: 'ar', rankedPhraseIds: ranked(false), distress: true })[0].phraseId)).toBe(true);
+  });
+
+  it('completes words this patient typed before, most used first', () => {
+    const lexicon = learnWords({}, 'mart ya mra marti marti');
+    const result = suggestKeys({ text: 'mar', alphabet: 'latin', rankedPhraseIds: [], lexicon });
+    expect(result).toContainEqual({ kind: 'word', word: 'marti' });
+    expect(completeWord('ana nheb mar', 'marti')).toBe('ana nheb marti ');
+  });
+
+  it('matches Arabic spelling variants', () => {
+    expect(normalise('أكلة')).toBe(normalise('اكله'));
+  });
+});
+
+describe('screen sleep', () => {
+  const now = 1_000_000;
+  it('stays awake longer when the heart rate is above baseline', () => {
+    const calm = sleepDelayMs({ hr: 70, baseline: 70, state: 'normal', now });
+    const raised = sleepDelayMs({ hr: 80, baseline: 70, state: 'normal', now });
+    const high = sleepDelayMs({ hr: 95, baseline: 70, state: 'normal', now });
+    expect(calm).toBe(SLEEP_RULES.calmMs);
+    expect(raised).toBeGreaterThan(calm);
+    expect(high).toBe(SLEEP_RULES.distressMs);
+  });
+
+  it('stays awake longest in distress or after a call for help, never with an urgent alert open', () => {
+    expect(sleepDelayMs({ hr: null, baseline: null, state: 'elevated', now })).toBe(SLEEP_RULES.distressMs);
+    expect(sleepDelayMs({ hr: 70, baseline: 70, state: 'normal', lastHelpAt: now - 60_000, now })).toBe(SLEEP_RULES.distressMs);
+    expect(sleepDelayMs({ hr: 70, baseline: 70, state: 'normal', urgentOpen: true, now })).toBeNull();
+  });
+});
+
 describe('protocol', () => {
   const frame = (type, payload) => JSON.stringify({ type, ts: 1, payload });
+
+  it('accepts the nurse\'s home phrases and rejects malformed ones', () => {
+    const home = [{ id: 'water' }, { text: 'Is my wife here?' }, { id: 'pain' }, { id: 'nurse' }, { id: 'yes' }, { id: 'no' }];
+    expect(parseEvent(frame('board', { home, alphabet: 'ar' }), CAREGIVER_EVENTS).ok).toBe(true);
+    expect(parseEvent(frame('board', { home: home.slice(0, 5), alphabet: 'ar' }), CAREGIVER_EVENTS).ok).toBe(false);
+    expect(parseEvent(frame('board', { home, alphabet: 'klingon' }), CAREGIVER_EVENTS).ok).toBe(false);
+    expect(parseEvent(frame('board', { home: [...home.slice(0, 5), { id: 'x', text: 'both' }], alphabet: 'ar' }), CAREGIVER_EVENTS).ok).toBe(false);
+    expect(parseEvent(frame('board', { home, alphabet: 'ar' }), PATIENT_EVENTS).ok).toBe(false); // only caregivers change it
+  });
 
   it('accepts a well-formed message from the patient', () => {
     const result = parseEvent(frame('message', { id: 'water', text: 'I want to drink', urgency: 'routine', category: 'needs' }), PATIENT_EVENTS);

@@ -164,6 +164,22 @@
     </div>
   </section>
 
+  <!-- Built for a whole day and night at the bedside -->
+  <section class="slide inside" id="features" data-auto="18" data-guide="off" data-look="-10" data-dim="0.68"
+    data-notes="It is made for a whole day and night at the bedside. Karim chooses the six phrases on his home screen from his phone. For anything else there is a keyboard: the most used letters come first, and the suggestions follow both the letters he types and his heart rate. When Karim asks a question, it fills the screen with just yes and no. When he closes his eyes, nothing can be chosen. And when he rests, the screen goes dark with one dot; it stays awake longer when his heart is racing.">
+    <h2 class="lines center top">
+      <span class="line"><span data-line style="--i:0">Made for a whole day and night at his bed</span></span>
+    </h2>
+    <figure class="screen shutter" data-ui><img src="media/keyboard.png" alt="The 3ayni keyboard: twelve letters, previous and next pages, and two suggestions"></figure>
+    <ul class="claims features">
+      <li class="rise" style="--i:3"><strong>Karim chooses his six phrases</strong> from his phone.</li>
+      <li class="rise" style="--i:4"><strong>A keyboard for the rest:</strong> most used letters first, suggestions from his letters and his heart.</li>
+      <li class="rise" style="--i:5"><strong>A question is just yes or no,</strong> big in the middle of the screen.</li>
+      <li class="rise" style="--i:6"><strong>Closed eyes choose nothing.</strong></li>
+      <li class="rise" style="--i:7"><strong>At rest, the screen sleeps to one dot.</strong> It stays awake longer when his heart races.</li>
+    </ul>
+  </section>
+
   <!-- 7 · How it works -->
   <section class="slide inside" id="how" data-auto="18" data-guide="off" data-look="30" data-dim="0.66"
     data-notes="Everything runs in the browser on the bedside laptop. A face model tracks the eyes, and an eight-second calibration learns this patient's gaze. Each heartbeat slightly changes the colour of the skin, which gives the heart rate. Clear rules combine words and body, and only the result reaches the phone.">
@@ -217,14 +233,14 @@
 
   <!-- 10 · What we measured -->
   <section class="slide inside" id="proof" data-auto="18" data-guide="off" data-look="20" data-dim="0.7"
-    data-notes="Suggestions cut the effort of a message by 37 percent: 1.89 selections instead of 3, measured on 2,000 simulated conversations the model never saw. On test signals the heart rate stays within 3 beats per minute, even under flickering light. All 67 automated tests pass. Next, real accuracy against a pulse oximeter.">
+    data-notes="The suggestion model has the right phrase in its top three 56 percent of the time, on almost 4,000 simulated messages it never saw; a fixed list of favourites reaches only 38 percent. On test signals the heart rate stays within 3 beats per minute, even under flickering light. All 86 automated tests pass. Next, real accuracy against a pulse oximeter.">
     <h2 class="lines center top">
       <span class="line"><span data-line style="--i:0">What we measured</span></span>
     </h2>
     <div class="figures">
-      <div class="rise" style="--i:2"><b data-count="37" data-suffix=" %">0 %</b><p>fewer selections per message, 1.89 instead of 3</p></div>
+      <div class="rise" style="--i:2"><b data-count="56" data-suffix=" %">0 %</b><p>of messages in the model's top 3 suggestions, against 38 % for a fixed list</p></div>
       <div class="rise" style="--i:3"><b data-count="3" data-prefix="± " data-suffix=" bpm">± 0 bpm</b><p>heart rate on test signals from 52 to 130 bpm</p></div>
-      <div class="rise" style="--i:4"><b data-count="67" data-suffix=" of 67">0 of 67</b><p>automated tests passing</p></div>
+      <div class="rise" style="--i:4"><b data-count="86" data-suffix=" of 86">0 of 86</b><p>automated tests passing</p></div>
     </div>
     <p class="source rise" style="--i:6">Simulated conversations and synthetic signals. The next measure is a hospital pilot.</p>
   </section>
@@ -301,6 +317,40 @@
       <p class="questions">Questions and discussion are welcome.</p>
       <p class="team">Team Eddes Eddes A777: Mohamed Idriss Mokdadi and Ahmed Ammar</p>
       <p class="credits">Nurse photograph: Freepik, via a Slidesgo template. Hospital room: Tomasz Sienicki, public domain. Eye footage: InkassoSchroeder, CC BY-SA 4.0, Wikimedia Commons.</p>
+    </div>
+  </section>
+
+  <!-- Q&A: answers kept ready for the jury's questions -->
+  <section class="slide inside qa-slide" id="qa-accuracy" data-auto="20" data-guide="off" data-look="0" data-dim="0.8"
+    data-notes="Backup for questions about accuracy and safety.">
+    <h2 class="lines center top"><span class="line"><span data-line style="--i:0">Your questions: accuracy and safety</span></span></h2>
+    <div class="qa">
+      <div class="rise" style="--i:2"><h3>How accurate is the camera heart rate?</h3><p>Within 3 bpm on test signals from 52 to 130 bpm. On real faces it works in good front light and when still; a weak signal shows a dash, never a number. A pilot against a pulse oximeter comes next.</p></div>
+      <div class="rise" style="--i:3"><h3>What if it is wrong?</h3><p>Alerts need a sustained rise above his own baseline, with hysteresis, and every alert states its reason. It adds to clinical monitors; it never replaces them.</p></div>
+      <div class="rise" style="--i:4"><h3>Can he choose something by accident?</h3><p>A choice needs a steady look of 1.4 seconds. Closed eyes cancel everything, and the screen sleeps to one dot when he rests.</p></div>
+      <div class="rise" style="--i:5"><h3>Is it a medical device?</h3><p>No. It is an assistive tool. Clinical validation would come before any medical claim.</p></div>
+    </div>
+  </section>
+
+  <section class="slide inside qa-slide" id="qa-use" data-auto="20" data-guide="off" data-look="0" data-dim="0.8"
+    data-notes="Backup for questions about patients and daily use.">
+    <h2 class="lines center top"><span class="line"><span data-line style="--i:0">Your questions: patients and daily use</span></span></h2>
+    <div class="qa">
+      <div class="rise" style="--i:2"><h3>Does it work at night?</h3><p>With room light, yes. In the dark, a low-cost infrared camera sees the eyes; that is our next hardware step.</p></div>
+      <div class="rise" style="--i:3"><h3>What if he cannot read?</h3><p>Every tile has an icon and is spoken aloud in Darija, and a nurse's question needs only yes or no.</p></div>
+      <div class="rise" style="--i:4"><h3>What if his eyes tire or he loses eye control?</h3><p>Selection slows down when he blinks more than usual. Head movement and a single switch are on our roadmap.</p></div>
+      <div class="rise" style="--i:5"><h3>Who sets it up?</h3><p>The nurse: an 8-second calibration, a QR code for her phone, and six home phrases she picks herself.</p></div>
+    </div>
+  </section>
+
+  <section class="slide inside qa-slide" id="qa-trust" data-auto="20" data-guide="off" data-look="0" data-dim="0.8"
+    data-notes="Backup for questions about privacy, cost and competitors.">
+    <h2 class="lines center top"><span class="line"><span data-line style="--i:0">Your questions: privacy, cost and others</span></span></h2>
+    <div class="qa">
+      <div class="rise" style="--i:2"><h3>Where does the video go?</h3><p>Nowhere. It is processed on the laptop and never stored or sent; only phrases, alerts and numbers reach the paired phone.</p></div>
+      <div class="rise" style="--i:3"><h3>How much does it cost?</h3><p>The software runs on a laptop and webcam the hospital already has, with no internet and no subscription.</p></div>
+      <div class="rise" style="--i:4"><h3>Why not ChatGPT for suggestions?</h3><p>A small model on the laptop answers instantly, offline, explains itself and learns this one patient.</p></div>
+      <div class="rise" style="--i:5"><h3>How is it different from eye-gaze tablets or phone eye control?</h3><p>They let him speak. 3ayni also reads his heart, joins both, and warns the nurse.</p></div>
     </div>
   </section>
 

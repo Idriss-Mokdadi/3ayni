@@ -4,6 +4,10 @@
 import '../styles/caregiver.css';
 import { RelayLink } from '../shared/link.js';
 import { playTone, unlockAudio } from '../shared/sound.js';
+import { CATEGORIES, PHRASES } from '../patient/board/phrases.js';
+
+const HOME_SLOTS = 6;
+const CUSTOM = '__custom';
 
 const TREND_WINDOW_MS = 10 * 60_000;
 const QUESTIONS = ['Are you in pain?', 'Are you thirsty?', 'Are you cold?', 'Do you want to sleep?', 'Do you want to change position?'];
@@ -27,6 +31,7 @@ class CaregiverApp {
     this.historyItems = [];
 
     this.#buildQuestionChips();
+    this.#buildBoardForm();
     this.#bindUi();
     this.link = new RelayLink({
       role: 'caregiver',
@@ -72,6 +77,13 @@ class CaregiverApp {
         break;
       case 'question':
         this.#addHistory(event.ts, 'question', `Asked: ${event.payload.text}`);
+        break;
+      case 'board-state':
+        this.#fillBoardForm(event.payload);
+        $('board-status').textContent = 'In sync with the bedside';
+        break;
+      case 'board':
+        this.#addHistory(event.ts, 'status', 'Home phrases changed by a caregiver');
         break;
       case 'ack':
         this.#addHistory(event.ts, 'ack', 'Alert acknowledged');
@@ -252,6 +264,60 @@ class CaregiverApp {
       return button;
     });
     $('question-chips').replaceChildren(...chips);
+  }
+
+  /** Six pickers: a phrase from the catalogue, or the nurse's own words. */
+  #buildBoardForm() {
+    const groups = [...CATEGORIES.filter((c) => c.id !== 'controls'), { id: 'answers', en: 'Answers' }];
+    const slots = Array.from({ length: HOME_SLOTS }, (_, i) => {
+      const row = document.createElement('div');
+      row.className = 'board-slot';
+      const label = document.createElement('label');
+      label.textContent = `Tile ${i + 1}`;
+      label.htmlFor = `slot-${i}`;
+      const select = document.createElement('select');
+      select.id = `slot-${i}`;
+      for (const group of groups) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = group.en;
+        for (const phrase of PHRASES.filter((p) => p.category === group.id)) {
+          optgroup.append(new Option(`${phrase.en} · ${phrase.ar}`, phrase.id));
+        }
+        select.append(optgroup);
+      }
+      select.append(new Option('Own words…', CUSTOM));
+      const input = document.createElement('input');
+      input.maxLength = 60;
+      input.placeholder = 'Your words, in Darija or French';
+      input.hidden = true;
+      select.addEventListener('change', () => (input.hidden = select.value !== CUSTOM));
+      row.append(label, select, input);
+      return row;
+    });
+    $('board-slots').replaceChildren(...slots);
+    $('board-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const home = slots.map((row) => {
+        const select = row.querySelector('select');
+        const text = row.querySelector('input').value.trim();
+        return select.value === CUSTOM ? (text ? { text } : { id: 'yes' }) : { id: select.value };
+      });
+      this.link.send('board', { home, alphabet: $('board-alphabet').value });
+      this.#addHistory(Date.now(), 'status', 'You changed the home phrases');
+      $('board-status').textContent = 'Sent';
+    });
+  }
+
+  #fillBoardForm({ home, alphabet }) {
+    home.forEach((item, i) => {
+      const select = $(`slot-${i}`);
+      const input = select?.parentElement.querySelector('input');
+      if (!select) return;
+      select.value = item.id ?? CUSTOM;
+      input.value = item.text ?? '';
+      input.hidden = select.value !== CUSTOM;
+    });
+    $('board-alphabet').value = alphabet;
   }
 
   #ask(text) {

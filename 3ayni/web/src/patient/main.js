@@ -12,8 +12,9 @@ import { RelayLink } from '../shared/link.js';
 import { playTone, unlockAudio } from '../shared/sound.js';
 import { loadJson, saveJson } from '../shared/storage.js';
 import { BoardModel } from './board/board-model.js';
+import { learnWords } from './board/keyboard.js';
 import { BoardView } from './board/board-view.js';
-import { PHRASES_BY_ID, SUGGESTIBLE_IDS } from './board/phrases.js';
+import { SUGGESTIBLE_IDS } from './board/phrases.js';
 import { FaceTracker } from './camera.js';
 import { seedPredictor } from './care-routines.js';
 import { DevPanel } from './devpanel.js';
@@ -24,6 +25,7 @@ import { OneEuroFilter } from './gaze/one-euro.js';
 import { SelectionEngine } from './gaze/selection.js';
 import { PhrasePredictor } from './predictor.js';
 import { StressSimulator } from './simulation.js';
+import { FAST_SLEEP_RULES, SLEEP_RULES, sleepDelayMs } from './sleep.js';
 import { Speaker } from './speech.js';
 import { ValidationLog } from './validation.js';
 import { VitalsDisplay } from './vitals-display.js';
@@ -33,6 +35,9 @@ import { VitalsEstimator } from './vitals/rppg.js';
 const DWELL_NORMAL_MS = 1400;
 const DWELL_SLOW_MS = 2200;
 const PREDICTOR_KEY = '3ayni.predictor.v1';
+const LEXICON_KEY = '3ayni.lexicon.v1';
+const BOARD_KEY = '3ayni.board.v1'; // the nurse's home phrases and keyboard alphabet
+const QUESTION_TIMEOUT_MS = 3 * 60_000; // an unanswered question goes back to the home screen
 const PREVIOUS_MESSAGE_WINDOW_MS = 10 * 60_000; // older messages no longer count as "previous"
 
 const $ = (id) => document.getElementById(id);
@@ -40,6 +45,15 @@ const $ = (id) => document.getElementById(id);
 class BedsideApp {
   constructor() {
     this.board = new BoardModel();
+    const savedBoard = loadJson(BOARD_KEY);
+    if (savedBoard?.home) this.board.setHome(savedBoard.home);
+    if (savedBoard?.alphabet) this.board.setAlphabet(savedBoard.alphabet);
+    this.lexicon = loadJson(LEXICON_KEY) ?? {};
+    this.sleepRules = SLEEP_RULES;
+    this.lastActivity = Date.now(); // last deliberate choice, question or wake-up
+    this.lastHelpAt = null; // last attention or urgent message
+    this.urgentOpen = false; // an urgent alert not yet acknowledged by a caregiver
+    this.questionAt = 0;
     this.view = new BoardView($('board'), (index, via) => this.activate(index, via));
     this.speaker = new Speaker();
     this.selection = new SelectionEngine({ dwellMs: DWELL_NORMAL_MS });
@@ -114,7 +128,7 @@ class BedsideApp {
 
   startManual() {
     $('start-overlay').hidden = true;
-    this.setBanner('Manual mode', 'Click a tile or press 1 to 6');
+    this.setBanner('Manual mode', 'Click a tile, or press a number key');
   }
 
   startCalibration() {
@@ -239,6 +253,8 @@ class BedsideApp {
       this.link?.send('status', { state: this.fatigued ? 'fatigued' : 'rested', reason: 'Blink rate' });
     }
 
+    this.#checkSleep(now);
+
     if (sharing && monitoring) {
       this.link?.send('vitals', {
         hr: vitals.hr === null ? null : Math.round(vitals.hr),
@@ -258,8 +274,10 @@ class BedsideApp {
       if (event.state === 'elevated' || event.state === 'normal') this.renderBoard(); // distress changes suggestions
     } else if (event.type === 'alert') {
       this.link?.send('alert', { id: event.id, level: event.level, reason: event.reason });
+      if (event.level === 'urgent') this.urgentOpen = true;
     } else if (event.type === 'prompt') {
-      this.board.ask(event.question);
+      this.board.ask(event.question, { yesMeans: 'pain' }); // "yes" to "Are you in pain?" says "I am in pain"
+      this.#questionArrived();
       this.setBanner('Question', `${event.questionAr}  ·  ${event.question}`, 'question');
       playTone('question');
       this.renderBoard();
@@ -274,17 +292,20 @@ class BedsideApp {
     const now = Date.now();
     this.view.flash(index);
     this.monitor.noteInteraction(now);
+    this.lastActivity = now;
     const action = this.board.select(tile);
 
     if (action.kind === 'say') this.#say(action.phraseId, action.answeredQuestion, now);
+    else if (action.kind === 'sayText') this.#sayText(action.text, action.alphabet, now);
     else if (action.kind === 'control') this.#runControl(action.name);
+    else if (action.kind === 'wake') this.#onWake();
 
     this.renderBoard();
     console.debug(`selected ${tile.key} via ${via}`);
   }
 
   #say(phraseId, answeredQuestion, now) {
-    const phrase = PHRASES_BY_ID.get(phraseId);
+    const phrase = this.board.phrase(phraseId);
     this.speaker.speak(phrase);
 
     const previousId = this.#previousMessageId(now);
@@ -295,6 +316,8 @@ class BedsideApp {
     this.lastMessage = { id: phraseId, at: now };
 
     const { urgency, alert } = this.monitor.assessMessage(now, phrase);
+    if (urgency !== 'routine') this.lastHelpAt = now;
+    if (urgency === 'urgent') this.urgentOpen = true;
     const text = answeredQuestion ? `${phrase.en} (answer to "${answeredQuestion}")` : phrase.en;
     this.link?.send('message', {
       id: phrase.id,
@@ -311,10 +334,28 @@ class BedsideApp {
     this.toast(this.link?.online ? 'Sent to your caregiver' : 'Said aloud. Caregiver not connected');
   }
 
+  /** A message written letter by letter on the keyboard. */
+  #sayText(text, alphabet, now) {
+    this.speaker.speakText(text, alphabet === 'latin' ? 'fr' : 'ar');
+    learnWords(this.lexicon, text);
+    saveJson(LEXICON_KEY, this.lexicon);
+    this.monitor.noteInteraction(now);
+    this.link?.send('message', { id: 'typed', text, ar: text, category: 'typed', urgency: 'routine', question: null });
+    this.setBanner('Wrote', text, null);
+    playTone('sent');
+    this.toast(this.link?.online ? 'Sent to your caregiver' : 'Said aloud. Caregiver not connected');
+  }
+
+  #onWake() {
+    $('app').classList.remove('is-asleep');
+    this.link?.send('status', { state: 'screen-awake', reason: 'Patient woke the screen' });
+    this.setBanner('Ready', 'Look at a tile to choose it');
+  }
+
   #runControl(name) {
     switch (name) {
       case 'repeat':
-        if (this.lastMessage) this.speaker.speak(PHRASES_BY_ID.get(this.lastMessage.id));
+        if (this.lastMessage) this.speaker.speak(this.board.phrase(this.lastMessage.id));
         break;
       case 'recalibrate':
         this.startCalibration();
@@ -335,17 +376,26 @@ class BedsideApp {
   }
 
   #applyDwell() {
-    this.selection.dwellMs = this.fatigued || this.board.settings.slowSelection ? DWELL_SLOW_MS : DWELL_NORMAL_MS;
+    if (this.board.asleep) this.selection.dwellMs = this.sleepRules.wakeDwellMs;
+    else this.selection.dwellMs = this.fatigued || this.board.settings.slowSelection ? DWELL_SLOW_MS : DWELL_NORMAL_MS;
+  }
+
+  /** Body under stress: elevated state, or heart rate already 15 % above baseline. */
+  #distressed() {
+    const { hr } = this.lastVitals;
+    const base = this.monitor.baseline;
+    return this.monitor.distressed || (Number.isFinite(hr) && Number.isFinite(base) && hr / base >= 1.15);
   }
 
   renderBoard() {
-    const suggestions = this.predictor.suggest({
-      previousId: this.#previousMessageId(Date.now()),
-      hour: new Date().getHours(),
-      distress: this.monitor.distressed,
-    });
-    this.tiles = this.board.tiles(suggestions);
-    this.view.render(this.tiles);
+    const distress = this.#distressed();
+    const ranked = this.predictor
+      .rank({ previousId: this.#previousMessageId(Date.now()), hour: new Date().getHours(), distress })
+      .map((entry) => entry.id);
+    this.tiles = this.board.tiles(ranked, this.lexicon, distress);
+    this.view.render(this.tiles, this.board.layout(), this.board.screen.name);
+    $('app').classList.toggle('is-asleep', this.board.asleep);
+    this.#applyDwell();
     this.selection.reset(performance.now());
     if (this.board.screen.name !== 'question' && $('banner').dataset.tone === 'question') {
       this.setBanner('Ready', 'Look at a tile to choose it');
@@ -354,6 +404,37 @@ class BedsideApp {
 
   #previousMessageId(now) {
     return this.lastMessage && now - this.lastMessage.at < PREVIOUS_MESSAGE_WINDOW_MS ? this.lastMessage.id : null;
+  }
+
+  /** Milliseconds before the board sleeps, given the patient's condition now (null = stays on). */
+  sleepDelay(now = Date.now()) {
+    return sleepDelayMs(
+      {
+        hr: this.lastVitals.hr,
+        baseline: this.monitor.baseline,
+        state: this.monitor.state,
+        lastHelpAt: this.lastHelpAt,
+        urgentOpen: this.urgentOpen,
+        now,
+      },
+      this.sleepRules,
+    );
+  }
+
+  #checkSleep(now) {
+    if (this.board.screen.name === 'question' && now - this.questionAt > QUESTION_TIMEOUT_MS) {
+      this.board.select({ kind: 'nav', target: 'home' });
+      this.renderBoard();
+    }
+    // Only with the camera: in manual mode a nurse is using the mouse.
+    if (!this.tracker || this.calibration || this.board.asleep || this.board.screen.name === 'question') return;
+    const delay = this.sleepDelay(now);
+    if (delay !== null && now - this.lastActivity >= delay) {
+      this.board.sleep();
+      this.renderBoard();
+      this.setBanner('Resting', 'Look at the dot to wake the screen');
+      this.link?.send('status', { state: 'screen-asleep', reason: `No choice for ${Math.round(delay / 1000)} s` });
+    }
   }
 
   // ------------------------------------------------------------ caregiver link
@@ -371,20 +452,42 @@ class BedsideApp {
       role: 'patient',
       token: this.session.token,
       onEvent: (event) => this.#onRelayEvent(event),
-      onStatus: (online) => this.#setLinkState(online ? 'online' : 'offline', online ? 'Relay connected' : 'Reconnecting'),
+      onStatus: (online) => {
+        this.#setLinkState(online ? 'online' : 'offline', online ? 'Relay connected' : 'Reconnecting');
+        if (online) this.#sendBoardState(); // the caregiver phone shows the current home phrases
+      },
     });
   }
 
   #onRelayEvent(event) {
     if (event.type === 'question') {
       this.board.ask(event.payload.text);
+      this.#questionArrived();
       this.setBanner('Question', event.payload.text, 'question');
       playTone('question');
       this.renderBoard();
+    } else if (event.type === 'board') {
+      this.board.setHome(event.payload.home);
+      this.board.setAlphabet(event.payload.alphabet);
+      saveJson(BOARD_KEY, { home: this.board.homeItems, alphabet: this.board.alphabet });
+      this.#sendBoardState();
+      this.toast('Home phrases updated by your caregiver');
+      this.renderBoard();
     } else if (event.type === 'ack') {
+      this.urgentOpen = false;
       this.setBanner('Caregiver', 'جايين ليك  ·  Help is on the way', null);
       this.toast('Your caregiver has seen your message');
     }
+  }
+
+  #questionArrived() {
+    this.questionAt = Date.now();
+    this.lastActivity = this.questionAt;
+    $('app').classList.remove('is-asleep');
+  }
+
+  #sendBoardState() {
+    this.link?.send('board-state', { home: this.board.homeItems, alphabet: this.board.alphabet });
   }
 
   #setLinkState(state, text) {
@@ -408,6 +511,7 @@ class BedsideApp {
   toggleFastTimings() {
     this.fastTimings = !this.fastTimings;
     this.monitor.rules = this.fastTimings ? FAST_DEMO_RULES : RULES;
+    this.sleepRules = this.fastTimings ? FAST_SLEEP_RULES : SLEEP_RULES;
     this.devPanel.setToggle('btn-fast', 'Fast demo timings', this.fastTimings);
   }
 
@@ -521,8 +625,15 @@ class BedsideApp {
       'Breathing (exp.)': `${fmt(e?.rr)} /min (${e?.rrQuality ?? '--'})`,
       Baseline: this.monitor.baseline === null ? 'learning…' : `${fmt(this.monitor.baseline)} bpm`,
       'Monitor state': this.monitor.state,
+      'Screen sleeps after': this.#sleepMetric(),
       Timings: this.fastTimings ? 'fast demo' : 'clinical',
     });
+  }
+
+  #sleepMetric() {
+    const delay = this.sleepDelay();
+    const idle = Math.round((Date.now() - this.lastActivity) / 1000);
+    return delay === null ? 'never (urgent alert open)' : `${Math.round(delay / 1000)} s idle (now ${idle} s)`;
   }
 
   #loadPredictor() {
