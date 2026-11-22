@@ -3,7 +3,7 @@ import { PhrasePredictor, timeBucket } from '../web/src/patient/predictor.js';
 import { seedPredictor, generateRoutines } from '../web/src/patient/care-routines.js';
 import { CareMonitor, RULES } from '../web/src/patient/fusion.js';
 import { BoardModel } from '../web/src/patient/board/board-model.js';
-import { cellMap } from '../web/src/patient/board/board-view.js';
+import { cellMap, stickyTile } from '../web/src/patient/board/board-view.js';
 import { ALPHABETS, applyKey, completeWord, learnWords, normalise, pages as keyboardPages, suggest as suggestKeys } from '../web/src/patient/board/keyboard.js';
 import { SLEEP_RULES, sleepDelayMs } from '../web/src/patient/sleep.js';
 import { PHRASES, PHRASES_BY_ID, CATEGORIES, DISTRESS_IDS as DISTRESS } from '../web/src/patient/board/phrases.js';
@@ -287,6 +287,20 @@ describe('cellMap', () => {
       [null, null, 1],
       [2, 3, 3],
     ]);
+  });
+});
+
+describe('stickyTile', () => {
+  const cells = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 7],
+  ];
+  it('keeps the current tile until the gaze is clearly past its edge', () => {
+    expect(stickyTile({ col: 0.9, row: 0.5 }, cells, null)).toBe(0);
+    expect(stickyTile({ col: 1.15, row: 0.5 }, cells, 0)).toBe(0); // 15 % into the next cell: still tile 0
+    expect(stickyTile({ col: 1.3, row: 0.5 }, cells, 0)).toBe(1); // 30 %: moved on
+    expect(stickyTile({ col: 2.1, row: 2.5 }, cells, 7)).toBe(7); // a wide tile counts as one
   });
 });
 

@@ -7,7 +7,44 @@
 import { icon } from '../../shared/icons.js';
 
 const RING_RADIUS = 26;
+// Sticky tiles: once the gaze is on a tile, it must go this far past the tile's
+// edge (as a fraction of a cell) before another tile takes over. Webcam gaze
+// shakes most at the corners and edges; without this, the ring kept restarting.
+export const STICKY_MARGIN = 0.2;
 const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
+
+/**
+ * The cell under a gaze point, keeping the current tile while the point stays
+ * within STICKY_MARGIN of it. Pure, for unit tests.
+ * @param {{col: number, row: number}} at continuous cell position (e.g. 2.4 = 40 % into the third column)
+ * @param {Array<Array<number|null>>} cells from cellMap
+ * @param {number|null} current tile index currently looked at
+ */
+export function stickyTile(at, cells, current, margin = STICKY_MARGIN) {
+  const rows = cells.length;
+  const columns = cells[0]?.length ?? 0;
+  if (current !== null && current !== undefined) {
+    let c0 = Infinity;
+    let c1 = -Infinity;
+    let r0 = Infinity;
+    let r1 = -Infinity;
+    cells.forEach((line, r) =>
+      line.forEach((index, c) => {
+        if (index !== current) return;
+        c0 = Math.min(c0, c);
+        c1 = Math.max(c1, c);
+        r0 = Math.min(r0, r);
+        r1 = Math.max(r1, r);
+      }),
+    );
+    if (c0 !== Infinity && at.col >= c0 - margin && at.col < c1 + 1 + margin && at.row >= r0 - margin && at.row < r1 + 1 + margin) {
+      return current;
+    }
+  }
+  const column = clamp(Math.floor(at.col), 0, columns - 1);
+  const row = clamp(Math.floor(at.row), 0, rows - 1);
+  return cells[row]?.[column] ?? null;
+}
 
 /**
  * Places tiles row by row into a grid and returns, for every cell, the index
@@ -44,6 +81,7 @@ export class BoardView {
     this.cells = [[]];
     this.layout = { columns: 3, rows: 2 };
     this.hovered = null;
+    this.gazeTile = null; // tile under the gaze last time, for sticky tiles
     this.keyboardIndex = 0;
 
     container.addEventListener('click', (event) => {
@@ -69,6 +107,7 @@ export class BoardView {
     this.selectable = tiles.map((tile, index) => (tile.inert ? null : index)).filter((i) => i !== null);
     this.container.append(...this.tileElements);
     this.hovered = null;
+    this.gazeTile = null;
   }
 
   #tileElement(tile, index) {
@@ -143,9 +182,12 @@ export class BoardView {
     const { columns, rows } = this.layout;
     const px = point.x * window.innerWidth;
     const py = point.y * window.innerHeight;
-    const column = clamp(Math.floor(((px - rect.left) / rect.width) * columns), 0, columns - 1);
-    const row = clamp(Math.floor(((py - rect.top) / rect.height) * rows), 0, rows - 1);
-    return this.cells[row]?.[column] ?? null;
+    const at = {
+      col: clamp(((px - rect.left) / rect.width) * columns, 0, columns - 1e-6),
+      row: clamp(((py - rect.top) / rect.height) * rows, 0, rows - 1e-6),
+    };
+    this.gazeTile = stickyTile(at, this.cells, this.gazeTile);
+    return this.gazeTile;
   }
 
   setHover(index) {

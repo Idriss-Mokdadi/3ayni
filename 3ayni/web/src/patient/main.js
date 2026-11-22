@@ -165,7 +165,7 @@ class BedsideApp {
     $('calibration-overlay').hidden = true;
     this.gazeModel = result.model;
     this.calibrationError = result.error;
-    this.calibrationAxes = { x: result.errorX, y: result.errorY };
+    this.calibrationAxes = { x: result.errorX, y: result.errorY, stretchX: result.stretch.x.gain, stretchY: result.stretch.y.gain };
     this.filterX.reset();
     this.filterY.reset();
     this.selection.reset(performance.now());
@@ -633,7 +633,7 @@ class BedsideApp {
       'Calibration error':
         this.calibrationError === null
           ? '--'
-          : `${fmt(this.calibrationError * 100)}% of screen (left-right ${fmt(this.calibrationAxes.x * 100)}%, up-down ${fmt(this.calibrationAxes.y * 100)}%)`,
+          : `${fmt(this.calibrationError * 100)}% of screen (left-right ${fmt(this.calibrationAxes.x * 100)}%, up-down ${fmt(this.calibrationAxes.y * 100)}%; corner stretch ×${fmt(this.calibrationAxes.stretchX, 2)} / ×${fmt(this.calibrationAxes.stretchY, 2)})`,
       'Blinks / min': String(this.selection.blinkRate(performance.now())),
       'Dwell time': `${this.selection.dwellMs} ms`,
       'Pulse buffer': `${fmt(e?.bufferedSeconds, 1)} s`,

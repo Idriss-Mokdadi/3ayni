@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fitRidge, solve } from '../web/src/patient/gaze/ridge.js';
-import { GazeCalibration, DEFAULT_TARGETS, SETTLE_MS, CAPTURE_MS, dropOutliers } from '../web/src/patient/gaze/calibration.js';
+import { GazeCalibration, DEFAULT_TARGETS, SETTLE_MS, CAPTURE_MS, dropOutliers, fitStretch } from '../web/src/patient/gaze/calibration.js';
 import { OneEuroFilter } from '../web/src/patient/gaze/one-euro.js';
 import { SelectionEngine } from '../web/src/patient/gaze/selection.js';
 import { extractGazeFeatures, eyeClosure, FEATURE_NAMES } from '../web/src/patient/gaze/features.js';
@@ -131,6 +131,42 @@ describe('GazeCalibration', () => {
       const p = result.model.predict(frontCamera(target, rand));
       expect(Math.hypot(p.x - target.x, p.y - target.y)).toBeLessThan(0.12);
     }
+  });
+
+  it('stretches the model back to the corners when noise makes it play safe', () => {
+    // A noisy webcam and eyes that move less near the screen edges: the
+    // penalty grows and, without the stretch, pulls the corners inwards.
+    const rand = seededRandom(9);
+    const K = 6;
+    const sat = (v) => Math.tanh(2.2 * v) / 2.2;
+    const person = (t, r) => {
+      const x = t.x - 0.5;
+      const y = t.y - 0.5;
+      const n = (a) => (r() - 0.5) * a * K;
+      return [
+        0.5 + 0.08 * sat(x) + n(0.01), 0.5 + n(0.08), 0.02 * sat(y) + n(0.003), 0.4 - 0.08 * sat(y) + n(0.008),
+        0.5 * sat(x) + n(0.08), -0.4 * sat(y) + n(0.08), 0.02 * x + n(0.004), 0.015 * y + n(0.004),
+      ];
+    };
+    const result = run(new GazeCalibration(), person, rand);
+    for (const corner of [{ x: 1 / 6, y: 1 / 6 }, { x: 5 / 6, y: 5 / 6 }, { x: 5 / 6, y: 1 / 6 }]) {
+      let x = 0;
+      let y = 0;
+      for (let i = 0; i < 400; i++) {
+        const p = result.model.predict(person(corner, rand));
+        x += p.x / 400;
+        y += p.y / 400;
+      }
+      // On average the gaze lands near the corner tile's centre, not pulled towards the middle.
+      expect(Math.abs(x - corner.x)).toBeLessThan(0.055);
+      expect(Math.abs(y - corner.y)).toBeLessThan(0.055);
+    }
+  });
+
+  it('fitStretch only ever expands, and within limits', () => {
+    expect(fitStretch([0.3, 0.5, 0.7], [0.1, 0.5, 0.9]).gain).toBeCloseTo(1.8, 5); // capped (true gain 2)
+    expect(fitStretch([0.2, 0.5, 0.8], [0.2, 0.5, 0.8])).toEqual({ gain: 1, offset: 0 });
+    expect(fitStretch([0.0, 0.5, 1.0], [0.25, 0.5, 0.75]).gain).toBe(1); // never shrinks
   });
 
   it('dropOutliers keeps the steady samples', () => {

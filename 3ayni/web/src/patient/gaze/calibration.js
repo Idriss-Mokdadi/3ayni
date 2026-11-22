@@ -10,7 +10,12 @@
 //     glance away, a late saccade) are left out before fitting;
 //   - the penalty strength is chosen by leaving each dot out in turn and
 //     checking how well the others predict it, so the model is judged on
-//     points it did not see, not on the ones it memorised.
+//     points it did not see, not on the ones it memorised;
+//   - a stretch per axis undoes the pull towards the middle. A penalised
+//     model plays safe and aims a little towards the centre of the screen,
+//     which hardly matters there but makes the corners hard to reach. The
+//     same left-out predictions show by how much, and a straight-line fit
+//     of "where the dot was" against "where the model said" corrects it.
 
 import { fitRidge } from './ridge.js';
 
@@ -31,6 +36,7 @@ export const SETTLE_MS = 650; // eyes travel to the dot, samples ignored
 export const CAPTURE_MS = 1000; // samples recorded
 const MIN_SAMPLES_PER_TARGET = 8;
 const LAMBDAS = [0.05, 0.2, 0.5, 2, 8];
+const MAX_STRETCH = 1.8; // never stretch more than this (a noisy calibration must not explode)
 
 // Feature indices (see features.js FEATURE_NAMES) given curved terms.
 const IRIS_X = 0;
@@ -147,25 +153,51 @@ export class GazeCalibration {
       if (sum < best.score) best = { lambda, score: sum };
     }
 
+    // Where each dot lands when the model never saw it (raw, before clamping).
+    const heldOut = groups.map((rows, i) => fit(best.lambda, i).predictMeanRaw(rows));
+    const stretch = {
+      x: fitStretch(heldOut.map((p) => p.x), this.targets.map((t) => t.x)),
+      y: fitStretch(heldOut.map((p) => p.y), this.targets.map((t) => t.y)),
+    };
     const model = fit(best.lambda);
-    // Reported error: typical distance on held-out dots, per axis (honest, not on training data).
+    model.stretch = stretch;
+
+    // Reported error: on held-out dots, after the stretch, per axis.
     let ex = 0;
     let ey = 0;
-    groups.forEach((rows, i) => {
-      const p = fit(best.lambda, i).predictMean(rows);
-      ex += (p.x - this.targets[i].x) ** 2;
-      ey += (p.y - this.targets[i].y) ** 2;
+    heldOut.forEach((p, i) => {
+      ex += (clamp(stretch.x.offset + stretch.x.gain * p.x, 0, 1) - this.targets[i].x) ** 2;
+      ey += (clamp(stretch.y.offset + stretch.y.gain * p.y, 0, 1) - this.targets[i].y) ** 2;
     });
     const errorX = Math.sqrt(ex / groups.length);
     const errorY = Math.sqrt(ey / groups.length);
-    return { ok: true, model, error: Math.hypot(errorX, errorY), errorX, errorY, lambda: best.lambda };
+    return { ok: true, model, error: Math.hypot(errorX, errorY), errorX, errorY, lambda: best.lambda, stretch };
   }
+}
+
+/**
+ * Straight-line fit target = offset + gain * predicted (least squares), with
+ * the gain kept between 1 (no shrinking) and MAX_STRETCH.
+ */
+export function fitStretch(predicted, targets) {
+  const n = predicted.length;
+  const mp = predicted.reduce((a, b) => a + b, 0) / n;
+  const mt = targets.reduce((a, b) => a + b, 0) / n;
+  let cov = 0;
+  let varP = 0;
+  for (let i = 0; i < n; i++) {
+    cov += (predicted[i] - mp) * (targets[i] - mt);
+    varP += (predicted[i] - mp) ** 2;
+  }
+  const gain = varP > 1e-12 ? Math.min(MAX_STRETCH, Math.max(1, cov / varP)) : 1;
+  return { gain, offset: mt - gain * mp };
 }
 
 export class GazeModel {
   constructor(xRegression, yRegression) {
     this.xRegression = xRegression;
     this.yRegression = yRegression;
+    this.stretch = { x: { gain: 1, offset: 0 }, y: { gain: 1, offset: 0 } };
   }
 
   /**
@@ -188,10 +220,22 @@ export class GazeModel {
     return { x, y };
   }
 
+  /** Average unclamped prediction, before the stretch (used to measure the stretch). */
+  predictMeanRaw(rows) {
+    let x = 0;
+    let y = 0;
+    for (const row of rows) {
+      x += this.xRegression.predict(row) / rows.length;
+      y += this.yRegression.predict(row) / rows.length;
+    }
+    return { x, y };
+  }
+
   #predictExpanded(row) {
+    const { x: sx, y: sy } = this.stretch;
     return {
-      x: clamp(this.xRegression.predict(row), 0, 1),
-      y: clamp(this.yRegression.predict(row), 0, 1),
+      x: clamp(sx.offset + sx.gain * this.xRegression.predict(row), 0, 1),
+      y: clamp(sy.offset + sy.gain * this.yRegression.predict(row), 0, 1),
     };
   }
 }

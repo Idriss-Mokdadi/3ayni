@@ -87,7 +87,7 @@ Karim taps "I'm on my way". [tap] Am Hédi sees: help is coming. [Alt+Tab back] 
 
 ### 15. What we measured
 <!-- 0:08 | 18 words -->
-On test signals, the heart rate stays within three beats. Ninety-three tests pass. A hospital pilot comes next. [click]
+On test signals, the heart rate stays within three beats. Ninety-six tests pass. A hospital pilot comes next. [click]
 
 ### 16. Private and honest
 <!-- 0:06 | 15 words -->
@@ -188,7 +188,7 @@ The software runs on a laptop and webcam the hospital already has. There is no s
 They let a person use a phone with their eyes. 3ayni is built for a hospital bed: it reads the heart too, joins both signals, alerts the nurse, speaks Darija, and runs on any laptop.
 
 **15. What did you test, and what is real?**
-The app works end to end and 93 automated tests pass. The suggestion results come from simulated care routines, not patients. The next step is a pilot in one Tunisian ward to measure real accuracy.
+The app works end to end and 96 automated tests pass. The suggestion results come from simulated care routines, not patients. The next step is a pilot in one Tunisian ward to measure real accuracy.
 
 ---
 
@@ -214,4 +214,4 @@ The app works end to end and 93 automated tests pass. The suggestion results com
 - Bauby, blinks counted by his stenographer: ["Paralyzed writer found way to soar", The Spokesman-Review, 11 March 1997](https://www.spokesman.com/stories/1997/mar/11/paralyzed-writer-found-way-to-soar/).
 - Bauby, stroke on 8 December 1995, left eyelid, frequency-ordered alphabet (E, S, A, R, I, N, T, U, L…), transcriber Claude Mendibil, death on 9 March 1997: [Jean-Dominique Bauby, Wikipedia](https://en.wikipedia.org/wiki/Jean-Dominique_Bauby); working pattern: [Elizabeth Day interviews Claude Mendibil, The Guardian, 27 January 2008](https://www.theguardian.com/film/2008/jan/27/2).
 - Hawking, one or two words per minute (Intel CTO Justin Rattner, 2013): [PCWorld](https://www.pcworld.com/article/436659/intel-swiftkey-upgrade-stephen-hawkings-communication-technology.html); cheek sensor and ACAT: [Intel press release, 2014](https://www.intc.com/news-events/press-releases/detail/380/new-intel-created-system-offers-professor-stephen-hawking), [Scientific American](https://www.scientificamerican.com/article/intel-helps-hawking-communicate/).
-- 3ayni figures (3 bpm on test signals, 93 tests, 40 s for "PAIN" on the letter board model, 1.4 s dwell, 25 % / 15 % alert thresholds): this project's code and tests, see `3ayni-how-it-works.md`.
+- 3ayni figures (3 bpm on test signals, 96 tests, 40 s for "PAIN" on the letter board model, 1.4 s dwell, 25 % / 15 % alert thresholds): this project's code and tests, see `3ayni-how-it-works.md`.

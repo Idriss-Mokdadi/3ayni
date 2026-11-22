@@ -114,7 +114,7 @@ A **medical device** that diagnoses must be certified (CE marking in Europe, the
 | **Express 5** | A small web server framework for Node. | Serves the built pages to the laptop and the phone. |
 | **WebSocket** (`ws` library) | A permanent two-way connection between browser and server. | Instant messages between the bedside and the phones. |
 | **qrcode** | Generates QR codes. | The pairing code a phone scans. |
-| **Vitest** | A test runner for JavaScript. | 93 automated tests. |
+| **Vitest** | A test runner for JavaScript. | 96 automated tests. |
 | **Lucide** | An open-source icon set. | Icons on the tiles. |
 | **IBM Plex Sans / Sans Arabic** | Open-source fonts. | Readable Latin and Arabic text. |
 
@@ -169,11 +169,12 @@ Finding a face and its exact points in any lighting, skin tone, angle and with g
 
 **File:** `calibration.js`. The patient looks at **9 dots**: the centre, then a 3 × 3 grid reaching the corners, where the tiles are (about 15 seconds). At each dot, the first 0.65 s are ignored (the eyes travel and settle), then 1 s of features is recorded.
 
-Three things make it hold up with an awkward camera position:
+Four things make it hold up with an awkward camera position and reach the corners:
 
 1. **Noisy frames are dropped.** At each dot, frames far from the median (a blink, a glance away, a late eye movement) are left out before fitting. The test injects one bad frame in five and the result stays accurate.
 2. **Curved terms.** Besides the eight features, the model also gets their squares and a cross term (`irisX²`, `irisHeight²`, `irisX × irisHeight`, `lookX²`, `lookY²`). Near the edges of the screen the eyes move less for the same distance, and a straight line can't follow that.
-3. **The model is judged on dots it did not see.** Several penalty strengths are tried. For each one, every dot is left out in turn, the model is fitted on the other eight, and the left-out dot is predicted. The strength that predicts unseen dots best wins. The error shown after calibration is measured the same way, per axis (left-right and up-down), so it is honest about new positions rather than flattering.
+3. **Corners are stretched back into reach.** A penalised model plays safe and aims a little towards the middle of the screen. In the centre that changes nothing, but in the corners the gaze point stopped short of the tile. The left-out predictions (point 4) show by how much: a straight line is fitted between "where the dot was" and "where the model said", per axis, and applied to every prediction. It only ever expands, at most ×1.8. In a simulation with a noisy webcam, a 1.4-second look completed on the corner tile 64 times out of 100 before, and 97 with the stretch.
+4. **The model is judged on dots it did not see.** Several penalty strengths are tried. For each one, every dot is left out in turn, the model is fitted on the other eight, and the left-out dot is predicted. The strength that predicts unseen dots best wins. The error shown after calibration is measured the same way, per axis (left-right and up-down), so it is honest about new positions rather than flattering.
 
 ### 5.3 Ridge regression, explained simply
 
@@ -184,6 +185,8 @@ Three things make it hold up with an awkward camera position:
 - **Ridge regression** adds a penalty `λ·(sum of the squared weights)`. The model prefers small, balanced weights: a little less exact on the calibration dots, **much more stable afterwards**. λ is chosen by the leave-one-dot-out test above.
 - One model is fitted for x and one for y. Fitting takes milliseconds, so it can be redone any time (`C` key).
 - **Why this is "purposeful AI":** every face, camera position and person differs. A fixed formula cannot work for everyone; a small learned model, fitted in 15 seconds, absorbs those differences.
+
+**Sticky tiles.** Once the gaze is on a tile, it must go 20 % of a cell past the tile's edge before another tile takes over. Webcam gaze shakes most near the corners and edges; without this margin the ring kept restarting. With the stretch and sticky tiles, the same simulation completed 100 corner looks out of 100.
 
 After calibration, if the error is above 20 % of the screen, the banner says which direction is imprecise (up-down or left-right) and suggests recalibrating with the head still.
 
@@ -485,7 +488,7 @@ This is **privacy by design**: rather than protecting video on a server, there i
 npm test
 ```
 
-**93 automated tests in 5 files:**
+**96 automated tests in 5 files:**
 
 | File | What it proves |
 |---|---|
