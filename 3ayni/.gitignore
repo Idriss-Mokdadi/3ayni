@@ -1,5 +1,0 @@
-node_modules/
-dist/
-web/public/wasm/
-web/public/models/
-*.log

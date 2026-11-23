@@ -1,7 +1,5 @@
-# Rebuilt by npm install / npm run build
 node_modules/
 dist/
-# Local Claude settings and Office lock files
-.claude/
-~$*
+web/public/wasm/
+web/public/models/
 *.log
